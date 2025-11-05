@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+
+class AbsensiKaryawan extends Model
+{
+    protected $table = 'absensi_karyawan';
+    protected $primaryKey = 'id';
+    protected $fillable = [
+        'id_karyawan',
+        'tanggal_absensi',
+        'waktu_absensi',
+        'status_absensi',
+        'koodinat',
+    ];
+
+    protected $casts = [
+        'tanggal_absensi' => 'date',
+        'waktu_absensi' => 'datetime',
+    ];
+    
+}

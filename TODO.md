@@ -1,0 +1,2 @@
+- [x] Fix pagination in historyAbsensiMaster() method: Change from paginate(3)->get() to paginate(7)
+- [x] Fix pagination in historyAbsensi() method: Change from get()->paginate(3) to paginate(7)
