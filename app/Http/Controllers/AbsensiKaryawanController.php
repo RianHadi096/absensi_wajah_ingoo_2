@@ -8,6 +8,8 @@ use App\Models\Karyawan;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\AbsensiKaryawanExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiKaryawanController extends Controller
 {
@@ -69,5 +71,9 @@ class AbsensiKaryawanController extends Controller
             ->first();
 
         return redirect()->route('karyawan/histori_absensi')->with('message', 'Absensi ' . $get_nama_karyawan->nama_lengkap . ' berhasil terekam.');
+    }
+
+    public function exportToExcel(){
+        return Excel::download(new AbsensiKaryawanExport,'absensi_karyawan_ingoo_'.Carbon::now().'.xlsx');
     }
 }

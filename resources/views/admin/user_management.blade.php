@@ -83,7 +83,7 @@
                             <div class="if-table-displays-in-desktop">
                                 <table class="table table-bordered table-striped mt-3">
                                     <thead>
-                                        <tr>
+                                        <tr class="text-center">
                                             <th>No</th>
                                             <th>Nama Karyawan</th>
                                             <th>Tanggal Lahir</th>
@@ -98,16 +98,16 @@
                                     <tbody>
                                         
                                     @foreach ($karyawans as $karyawan)
-                                        <tr>
-                                            <td class="text-center">{{ $karyawan->id }}</td>
-                                            <td class="text-center">{{ $karyawan->nama_lengkap }}</td>
-                                            <td class="text-center">{{ $karyawan->tanggal_lahir ? $karyawan->tanggal_lahir->format('d/m/Y') : '' }}</td>
-                                            <td class="text-center">{{ $karyawan->NIK }}</td>
-                                            <td class="text-center">{{ $karyawan->bagian }}</td>
-                                            <td class="text-center">{{ $karyawan->jabatan }}</td>
-                                            <td class="text-center">{{ $karyawan->tanggal_masuk_kerja ? $karyawan->tanggal_masuk_kerja->format('d/m/Y') : '' }}</td>
-                                            <td class="text-center">{{ $karyawan->nomor_handphone }}</td>
-                                            <td class="text-center">
+                                        <tr class="text-center">
+                                            <td>{{ $karyawan->id }}</td>
+                                            <td>{{ $karyawan->nama_lengkap }}</td>
+                                            <td>{{ $karyawan->tanggal_lahir ? $karyawan->tanggal_lahir->format('d/m/Y') : '' }}</td>
+                                            <td>{{ $karyawan->NIK }}</td>
+                                            <td>{{ $karyawan->bagian }}</td>
+                                            <td>{{ $karyawan->jabatan }}</td>
+                                            <td>{{ $karyawan->tanggal_masuk_kerja ? $karyawan->tanggal_masuk_kerja->format('d/m/Y') : '' }}</td>
+                                            <td>{{ $karyawan->nomor_handphone }}</td>
+                                            <td>
                                                 @if ($karyawan->imageFileLocation)
                                                     <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
                                                     <div class="d-flex justify-content-center">
@@ -128,35 +128,35 @@
                                     @foreach ($karyawans as $karyawan)
                                         <tr>
                                             <th>Nama Lengkap</th>
-                                            <td class="text-center">{{ $karyawan->nama_lengkap }}</td>
+                                            <td >{{ $karyawan->nama_lengkap }}</td>
                                         </tr>
                                         <tr>
                                             <th>Tanggal Lahir</th>
-                                            <td class="text-center">{{ $karyawan->tanggal_lahir ? $karyawan->tanggal_lahir->format('d/m/Y') : '' }}</td>
+                                            <td>{{ $karyawan->tanggal_lahir ? $karyawan->tanggal_lahir->format('d/m/Y') : '' }}</td>
                                         </tr>
                                         <tr>
                                             <th>NIK</th>
-                                            <td class="text-center">{{ $karyawan->NIK }}</td>
+                                            <td>{{ $karyawan->NIK }}</td>
                                         </tr>
                                         <tr>
                                             <th>Bagian</th>
-                                            <td class="text-center">{{ $karyawan->bagian }}</td>
+                                            <td">{{ $karyawan->bagian }}</td>
                                         </tr>
                                         <tr>
                                             <th>Jabatan</th>
-                                            <td class="text-center">{{ $karyawan->jabatan }}</td>
+                                            <td>{{ $karyawan->jabatan }}</td>
                                         </tr>
                                         <tr>
                                             <th>Tanggal Masuk Kerja</th>
-                                            <td class="text-center">{{ $karyawan->tanggal_masuk_kerja ? $karyawan->tanggal_masuk_kerja->format('d/m/Y') : '' }}</td>
+                                            <td>{{ $karyawan->tanggal_masuk_kerja ? $karyawan->tanggal_masuk_kerja->format('d/m/Y') : '' }}</td>
                                         </tr>
                                         <tr>
                                             <th>Nomor Handphone</th>
-                                            <td class="text-center">{{ $karyawan->nomor_handphone }}</td>
+                                            <td>{{ $karyawan->nomor_handphone }}</td>
                                         </tr>
                                         <tr>
                                             <th>Foto Karyawan</th>
-                                            <td class="text-center">
+                                            <td>
                                                 @if ($karyawan->imageFileLocation)
                                                     <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
                                                     <div class="d-flex justify-content-center">

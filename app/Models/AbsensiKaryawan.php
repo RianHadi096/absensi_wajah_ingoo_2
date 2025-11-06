@@ -17,9 +17,24 @@ class AbsensiKaryawan extends Model
         'koodinat',
     ];
 
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'id_karyawan', 'id');
+    }
+
     protected $casts = [
-        'tanggal_absensi' => 'date',
+        'tanggal_absensi' => 'datetime',
         'waktu_absensi' => 'datetime',
     ];
+
+    public function getWaktuAbsensiAttribute($value)
+    {
+        return Carbon::parse($value)->setTimezone('Asia/Jakarta')->format('H:i:s');
+    }
+
+    public function getTanggalAbsensiAttribute($value)
+    {
+        return Carbon::parse($value)->setTimezone('Asia/Jakarta')->format('d-m-Y');
+    }
     
 }
