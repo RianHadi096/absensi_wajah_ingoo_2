@@ -102,7 +102,7 @@
                             <div class="if-table-displays-in-mobile">
                                 <!-- Table Absensi Karyawan Mode Vertical -->
                                  
-                                @foreach ($fetch_data as $index => $absensi)
+                                @foreach ($fetch_data_mobile as $index => $absensi)
                                 <table class="table table-bordered mt-4">
                                     <tr>
                                         <th>Tanggal Absensi</th>
@@ -135,7 +135,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($fetch_data as $index => $absensi)
+                                        @foreach ($fetch_data_desktop as $index => $absensi)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $absensi->tanggal_absensi }}</td>
@@ -152,7 +152,13 @@
                 </div>
             </div>
             <div class="d-flex justify-content-center m-3">
-                {{ $fetch_data->links('pagination::bootstrap-5') }}
+                <div class="if-table-displays-in-mobile">
+                    {{ $fetch_data_mobile->links('pagination::bootstrap-5') }}
+                </div>
+                
+                <div class="if-table-displays-in-desktop">
+                    {{ $fetch_data_desktop->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
     </main>

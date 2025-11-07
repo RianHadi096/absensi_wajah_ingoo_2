@@ -62,14 +62,31 @@
             <div class="d-flex justify-content-center">
                 <div class="card">
                     <div class="card-body">
-                        tes manual
                         <div class="text-center m-3">
                             <h3>Absensi Kamera</h3>
-                            <p>Silakan ambil foto untuk absensi.</p>
-                            post manual without camera
-                            <form action="{{ route('karyawan/absensi_kamera/rekam') }}" method="POST" enctype="multipart/form-data">
+                            <p>Silakan ambil foto untuk absensi. Pastikan kamera telah diizinkan oleh browser.</p>
+
+                            <!-- Camera preview and capture -->
+                            <div class="mb-3">
+                                <video id="video" width="360" height="270" autoplay playsinline style="border:1px solid #ddd;background:#000"></video>
+                                <canvas id="canvas" width="360" height="270" style="display:none"></canvas>
+                                <img id="previewImage" src="#" alt="Preview" style="display:none; max-width:360px; margin-top:10px; border:1px solid #ccc"> 
+                            </div>
+
+                            <!-- Fallback file input for devices that don't support getUserMedia -->
+                            <div class="mb-2">
+                                <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none">
+                            </div>
+
+                            <form id="absensiForm" action="{{ route('karyawan/absensi_kamera/rekam') }}" method="POST">
                                 @csrf
-                                <button type="submit" class="btn btn-outline-primary">Submit</button>
+                                <input type="hidden" name="photo" id="photoInput">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button type="button" id="startCameraBtn" class="btn btn-outline-primary">Start Camera</button>
+                                    <button type="button" id="captureBtn" class="btn btn-primary" disabled>Capture</button>
+                                    <button type="button" id="retakeBtn" class="btn btn-warning" style="display:none">Retake</button>
+                                    <button type="submit" id="submitBtn" class="btn btn-success" disabled>Submit Absensi</button>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -78,25 +95,78 @@
         </div>
     </main>
     <script>
-    // Fungsi untuk membuka kamera menggunakan input file
-        function openCamera() {
-            const inputFile = document.getElementById('cameraInput');
-            inputFile.click();
+        let stream;
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const previewImage = document.getElementById('previewImage');
+        const photoInput = document.getElementById('photoInput');
+        const startCameraBtn = document.getElementById('startCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const cameraInput = document.getElementById('cameraInput');
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+                video.srcObject = stream;
+                captureBtn.disabled = false;
+                startCameraBtn.disabled = true;
+            } catch (err) {
+                // fallback: trigger file input if camera access denied or not available
+                cameraInput.click();
+            }
         }
 
-        // Menampilkan preview gambar dari input file
-        document.getElementById('cameraInput').addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const previewImage = document.getElementById('previewImageInputFile');
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = 'block';  // Menampilkan gambar
-                };
-                reader.readAsDataURL(file);
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
             }
+            startCameraBtn.disabled = false;
+        }
+
+        captureBtn.addEventListener('click', function () {
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            previewImage.src = dataUrl;
+            previewImage.style.display = 'block';
+            photoInput.value = dataUrl;
+            submitBtn.disabled = false;
+            retakeBtn.style.display = 'inline-block';
+            captureBtn.disabled = true;
+            stopCamera();
         });
+
+        retakeBtn.addEventListener('click', function () {
+            previewImage.style.display = 'none';
+            photoInput.value = '';
+            submitBtn.disabled = true;
+            retakeBtn.style.display = 'none';
+            captureBtn.disabled = false;
+            startCamera();
+        });
+
+        cameraInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                photoInput.value = e.target.result;
+                submitBtn.disabled = false;
+                retakeBtn.style.display = 'inline-block';
+                captureBtn.disabled = true;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        startCameraBtn.addEventListener('click', startCamera);
+
+        // stop camera when leaving page
+        window.addEventListener('beforeunload', stopCamera);
     </script>
 
 </body>

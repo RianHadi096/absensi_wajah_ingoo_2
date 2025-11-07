@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\AbsensiKaryawanExport;
+use Illuminate\Contracts\Session\Session;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiKaryawanController extends Controller
@@ -17,16 +18,38 @@ class AbsensiKaryawanController extends Controller
         //ambil semua data histori absensi untuk semua karyawan
         $fetch_data_absensi_karyawan = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
                                                 ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap as nama_karyawan')
-                                                ->paginate(10);
+                                                ->paginate(5);
         return view('admin.histori_absensi_karyawan',compact('fetch_data_absensi_karyawan'));
     }
-    public function historyAbsensi(){
+    public function historyAbsensiByKaryawan(){
         //ambil semua data histori absensi untuk karyawan tertentu
-        $fetch_data =
+        $fetch_data_mobile =
         AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
                         ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap')
-                        ->paginate(1);
-        return view('karyawan.histori_absensi',compact('fetch_data'));
+                        ->paginate(2);
+
+        $fetch_data_desktop =
+        AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
+                        ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap')
+                        ->paginate(5);
+        return view('karyawan.histori_absensi',compact('fetch_data_desktop','fetch_data_mobile'));
+    }
+
+    public function historyAbsensi(){
+        //ambil histori absensi untuk karyawan yang sedang login (menggunakan session)
+        $userId = session('user_id');
+
+        $fetch_data_mobile = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
+            ->where('absensi_karyawan.id_karyawan', $userId)
+            ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap')
+            ->paginate(2);
+
+        $fetch_data_desktop = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
+            ->where('absensi_karyawan.id_karyawan', $userId)
+            ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap')
+            ->paginate(5);
+
+        return view('karyawan.histori_absensi',compact('fetch_data_desktop','fetch_data_mobile'));
     }
     public function absensiKamera(){
         return view('karyawan.absensiKamera');
@@ -47,28 +70,36 @@ class AbsensiKaryawanController extends Controller
         //mengambil format jam
         $hour_only = Carbon::now()->toDayDateTimeString();
 
-        //menentukan status absensi
-        if (Carbon::now()->lessThanOrEqualTo($jam_masuk_kerja)) {
-            $status_absensi = 'Hadir Tepat Waktu';
-        } elseif (Carbon::now()->greaterThan($jam_masuk_kerja) && Carbon::now()->lessThanOrEqualTo($jam_keluar_kerja)) {
-            $status_absensi = 'Hadir Terlambat';
-        } else {
-            $status_absensi = 'Tidak Hadir';
-        }
-
-        $absensi::Create([
-            'id_karyawan' => session('user_id'),
-            'tanggal_absensi' => $date_only,
-            'waktu_absensi' => $hour_only,
-            'status_absensi' => $status_absensi,
-            'koordinat' => '',
-        ]);
+        
         //mengambil nama karyawan berdasarkan id_karyawan dari tabel absensi_karyawan
         $get_nama_karyawan = AbsensiKaryawan::
             join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
             ->where('absensi_karyawan.id_karyawan', session('user_id'))
             ->select('profile_karyawan.nama_lengkap')
             ->first();
+
+        //menentukan status absensi
+        if (Carbon::now()->lessThanOrEqualTo($jam_masuk_kerja)) {
+            $status_absensi = 'Hadir Tepat Waktu';
+            $absensi::Create([
+                'id_karyawan' => session('user_id'),
+                'tanggal_absensi' => $date_only,
+                'waktu_absensi' => $hour_only,
+                'status_absensi' => $status_absensi,
+                'koordinat' => '',
+            ]);
+        } elseif (Carbon::now()->greaterThan($jam_masuk_kerja) && Carbon::now()->lessThanOrEqualTo($jam_keluar_kerja)) {
+            $status_absensi = 'Hadir Terlambat';
+            $absensi::Create([
+                'id_karyawan' => session('user_id'),
+                'tanggal_absensi' => $date_only,
+                'waktu_absensi' => $hour_only,
+                'status_absensi' => $status_absensi,
+                'koordinat' => '',
+            ]);
+        } else {
+           return redirect()->route('karyawan/histori_absensi')->with('message', 'Dear ' . $get_nama_karyawan->nama_lengkap . ' , jam kerjanya sudah habis.');
+        }
 
         return redirect()->route('karyawan/histori_absensi')->with('message', 'Absensi ' . $get_nama_karyawan->nama_lengkap . ' berhasil terekam.');
     }
