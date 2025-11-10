@@ -13,12 +13,12 @@ class KaryawanController extends Controller
 {
     public function index(){
         //get all data karyawan
-        $fetch_karyawan_mobile = Karyawan::paginate(2);
-        $fetch_karyawan_desktop = Karyawan::paginate(5);
-        $fetch_karyawan = Karyawan::all();
+        $fetch_karyawan_mobile = Karyawan::paginate(1);
+        $fetch_karyawan_desktop = Karyawan::paginate(2);
+        $karyawans = Karyawan::all();
         //rekam dengan json encode
-        $karyawansJson = json_encode($fetch_karyawan);
-        return view('admin.user_management', compact('fetch_karyawan','fetch_karyawan_mobile','fetch_karyawan_desktop', 'karyawansJson'));
+        $karyawansJson = json_encode($karyawans);
+        return view('admin.user_management', compact('karyawans','fetch_karyawan_mobile','fetch_karyawan_desktop', 'karyawansJson'));
 
     }
     public function prosesTambahKaryawan(Request $request){

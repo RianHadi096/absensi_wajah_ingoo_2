@@ -27,9 +27,12 @@
     .hide-on-small {
         display: inline;
     }
+    .if-table-displays-in-desktop {
+        display: inline;
+    }
     .if-table-displays-in-mobile {
-            display: none;
-        }
+        display: none;
+    }
     @media (max-width: 500px) {
         .hide-on-small {
             display: none;
@@ -37,6 +40,23 @@
         .if-table-displays-in-desktop {
             display: none;
         }
+        .if-table-displays-in-mobile {
+            display: inline;
+        }
+    }
+    /* Override Bootstrap 5 pagination text color to black */
+    .page-link {
+        color: #000 !important;  /* Black text for links */
+    }
+    .page-link:hover {
+        color: #000 !important;  /* Black on hover */
+        background-color: #f8f9fa;  /* Optional: Light gray background on hover */
+    }
+    /* Active page styling */
+    .page-item.active .page-link {
+        background-color: #000;  /* Black background for active page */
+        border-color: #000;
+        color: #fff !important;  /* White text on active for contrast */
     }
 
 </style>
@@ -80,6 +100,53 @@
                         @endif
                         <!-- Vertical Table Style -->
                         <div class="table-responsive">
+                            <div class="if-table-displays-in-mobile">
+                                @foreach ($fetch_karyawan_mobile as $karyawan_mobile)
+                                <table class="table table-bordered mt-4">
+                                        <tr>
+                                            <th>Nama Lengkap</th>
+                                            <td>{{ $karyawan_mobile->nama_lengkap }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Tanggal Lahir</th>
+                                            <td>{{ $karyawan_mobile->tanggal_lahir ? $karyawan_mobile->tanggal_lahir->format('d/m/Y') : '' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>NIK</th>
+                                            <td>{{ $karyawan_mobile->NIK }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Bagian</th>
+                                            <td>{{ $karyawan_mobile->bagian }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Jabatan</th>
+                                            <td>{{ $karyawan_mobile->jabatan }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Tanggal Masuk Kerja</th>
+                                            <td>{{ $karyawan_mobile->tanggal_masuk_kerja ? $karyawan_mobile->tanggal_masuk_kerja->format('d/m/Y') : '' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Nomor Handphone</th>
+                                            <td>{{ $karyawan_mobile->nomor_handphone }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Foto Karyawan</th>
+                                            <td>
+                                                @if ($karyawan_mobile->imageFileLocation)
+                                                    <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
+                                                    <div class="d-flex justify-content-center">
+                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$karyawan_mobile->imageFileLocation) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
+                                                    </div>
+                                                @else
+                                                    <span>Tidak ada foto</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                </table>
+                                @endforeach
+                            </div>
                             <div class="if-table-displays-in-desktop">
                                 <table class="table table-bordered table-striped mt-3">
                                     <thead>
@@ -97,21 +164,21 @@
                                     </thead>
                                     <tbody>
                                         
-                                    @foreach ($karyawans as $karyawan)
+                                    @foreach ($fetch_karyawan_desktop as $index => $karyawan_desktop)
                                         <tr class="text-center">
-                                            <td>{{ $karyawan->id }}</td>
-                                            <td>{{ $karyawan->nama_lengkap }}</td>
-                                            <td>{{ $karyawan->tanggal_lahir ? $karyawan->tanggal_lahir->format('d/m/Y') : '' }}</td>
-                                            <td>{{ $karyawan->NIK }}</td>
-                                            <td>{{ $karyawan->bagian }}</td>
-                                            <td>{{ $karyawan->jabatan }}</td>
-                                            <td>{{ $karyawan->tanggal_masuk_kerja ? $karyawan->tanggal_masuk_kerja->format('d/m/Y') : '' }}</td>
-                                            <td>{{ $karyawan->nomor_handphone }}</td>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $karyawan_desktop->nama_lengkap }}</td>
+                                            <td>{{ $karyawan_desktop->tanggal_lahir ? $karyawan_desktop->tanggal_lahir->format('d/m/Y') : '' }}</td>
+                                            <td>{{ $karyawan_desktop->NIK }}</td>
+                                            <td>{{ $karyawan_desktop->bagian }}</td>
+                                            <td>{{ $karyawan_desktop->jabatan }}</td>
+                                            <td>{{ $karyawan_desktop->tanggal_masuk_kerja ? $karyawan_desktop->tanggal_masuk_kerja->format('d/m/Y') : '' }}</td>
+                                            <td>{{ $karyawan_desktop->nomor_handphone }}</td>
                                             <td>
-                                                @if ($karyawan->imageFileLocation)
+                                                @if ($karyawan_desktop->imageFileLocation)
                                                     <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
                                                     <div class="d-flex justify-content-center">
-                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$karyawan->imageFileLocation) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px;">
+                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$karyawan_desktop->imageFileLocation) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
                                                     </div>
                                                 @else
                                                     <span>Tidak ada foto</span>
@@ -123,61 +190,18 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="if-table-displays-in-mobile">
-                                <table class="table table-bordered mt-4">
-                                    @foreach ($karyawans as $karyawan)
-                                        <tr>
-                                            <th>Nama Lengkap</th>
-                                            <td>{{ $karyawan->nama_lengkap }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Tanggal Lahir</th>
-                                            <td>{{ $karyawan->tanggal_lahir ? $karyawan->tanggal_lahir->format('d/m/Y') : '' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>NIK</th>
-                                            <td>{{ $karyawan->NIK }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Bagian</th>
-                                            <td">{{ $karyawan->bagian }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Jabatan</th>
-                                            <td>{{ $karyawan->jabatan }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Tanggal Masuk Kerja</th>
-                                            <td>{{ $karyawan->tanggal_masuk_kerja ? $karyawan->tanggal_masuk_kerja->format('d/m/Y') : '' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Nomor Handphone</th>
-                                            <td>{{ $karyawan->nomor_handphone }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Foto Karyawan</th>
-                                            <td>
-                                                @if ($karyawan->imageFileLocation)
-                                                    <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
-                                                    <div class="d-flex justify-content-center">
-                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$karyawan->imageFileLocation) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
-                                                    </div>
-                                                @else
-                                                    <span>Tidak ada foto</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        
-                                     @endforeach
-                                    </table>
-                                </div>
-                            
-                            </div>
-                         </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="d-flex justify-content-center m-3">
-                {{ $karyawans->links('pagination::bootstrap-5') }}
+                <div class="if-table-displays-in-mobile">
+                    {{ $fetch_karyawan_mobile->links('pagination::bootstrap-5') }}
+                </div>
+                
+                <div class="if-table-displays-in-desktop">
+                    {{ $fetch_karyawan_desktop->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
     </main>
@@ -367,7 +391,7 @@
                     document.getElementById('edit_nomor_handphone').value = selectedKaryawan.nomor_handphone;
                     // For image, if exists, show preview
                     if (selectedKaryawan.imageFileLocation) {
-                        document.getElementById('edit-preview-image').src = '{{ asset("storage/".$karyawan->imageFileLocation) }}';
+                        document.getElementById('edit-preview-image').src = '{{ asset("storage/") }}/' + selectedKaryawan.imageFileLocation;
                         document.getElementById('edit-preview-image').style.display = 'block';
                     } else {
                         document.getElementById('edit-preview-image').style.display = 'none';
