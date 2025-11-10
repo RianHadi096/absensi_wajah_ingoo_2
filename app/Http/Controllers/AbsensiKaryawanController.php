@@ -16,10 +16,13 @@ class AbsensiKaryawanController extends Controller
 {
     public function historyAbsensiMaster(){
         //ambil semua data histori absensi untuk semua karyawan
-        $fetch_data_absensi_karyawan = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
+        $fetch_data_absensi_karyawan_desktop = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
                                                 ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap as nama_karyawan')
                                                 ->paginate(5);
-        return view('admin.histori_absensi_karyawan',compact('fetch_data_absensi_karyawan'));
+        $fetch_data_absensi_karyawan_mobile = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
+                                                ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap as nama_karyawan')
+                                                ->paginate(2);
+        return view('admin.histori_absensi_karyawan',compact('fetch_data_absensi_karyawan_desktop','fetch_data_absensi_karyawan_mobile'));
     }
     public function historyAbsensiByKaryawan(){
         //ambil semua data histori absensi untuk karyawan tertentu

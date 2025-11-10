@@ -13,7 +13,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Karyawan</title>
+    <title>INGOO || Data Karyawan ({{ session('role') }})</title>
 </head>
 
 <style>
@@ -128,7 +128,7 @@
                                     @foreach ($karyawans as $karyawan)
                                         <tr>
                                             <th>Nama Lengkap</th>
-                                            <td >{{ $karyawan->nama_lengkap }}</td>
+                                            <td>{{ $karyawan->nama_lengkap }}</td>
                                         </tr>
                                         <tr>
                                             <th>Tanggal Lahir</th>
@@ -167,7 +167,8 @@
                                                 @endif
                                             </td>
                                         </tr>
-                                        @endforeach
+                                        
+                                     @endforeach
                                     </table>
                                 </div>
                             

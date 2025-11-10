@@ -13,7 +13,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Karyawan</title>
+    <title>INGOO || Histori Absensi ({{ session('role') }})</title>
 </head>
 
 <style>
@@ -98,28 +98,30 @@
                         <div class="table-responsive">
                             <div class="if-table-displays-in-mobile">
                                 <!-- Table Absensi Karyawan Mode Vertical -->
+                                 @foreach ($fetch_data_absensi_karyawan_mobile as $absensi_mobile)
                                 <table class="table table-bordered mt-4">
                                     <tr>
                                         <th>Nama Lengkap</th>
-                                        <td class="text-center"></td>
+                                        <td>{{ $absensi_mobile->nama_karyawan }}</td>
                                     </tr>
                                     <tr>
                                         <th>Tanggal Absensi</th>
-                                        <td class="text-center"></td>
+                                        <td>{{ $absensi_mobile->tanggal_absensi }}</td>
                                     </tr>
                                     <tr>
                                         <th>Waktu Absensi</th>
-                                        <td class="text-center"></td>
+                                        <td>{{ $absensi_mobile->waktu_absensi }}</td>
                                     </tr>
                                     <tr>
                                         <th>Status Absensi</th>
-                                        <td class="text-center"></td>
+                                        <td>{{ $absensi_mobile->status_absensi ?? 'N/A' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Koordinat (Google Maps)</th>
-                                        <td class="text-center"></td>
+                                        <td>{{ $absensi_mobile->koodinat ?? 'N/A'}}</td>
                                     </tr>
                                 </table>
+                                @endforeach
                             </div>
                             <div class="if-table-displays-in-desktop">
                                 <table class="table table-bordered table-striped mt-3">
@@ -134,14 +136,14 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($fetch_data_absensi_karyawan as $index => $absensi)
+                                        @foreach ($fetch_data_absensi_karyawan_desktop as $index => $absensi_desktop)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td>{{ $absensi->nama_karyawan }}</td>
-                                            <td>{{ $absensi->tanggal_absensi }}</td>
-                                            <td>{{ $absensi->waktu_absensi }}</td>
-                                            <td>{{ $absensi->status_absensi ?? 'N/A' }}</td>
-                                            <td>{{ $absensi->koodinat ?? 'N/A'}}</td>
+                                            <td>{{ $absensi_desktop->nama_karyawan }}</td>
+                                            <td>{{ $absensi_desktop->tanggal_absensi }}</td>
+                                            <td>{{ $absensi_desktop->waktu_absensi }}</td>
+                                            <td>{{ $absensi_desktop->status_absensi ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_desktop->koodinat ?? 'N/A'}}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -152,7 +154,13 @@
                 </div>
             </div>
             <div class="d-flex justify-content-center m-3">
-                {{ $fetch_data_absensi_karyawan->links('pagination::bootstrap-5') }}
+                <div class="if-table-displays-in-mobile">
+                    {{ $fetch_data_absensi_karyawan_mobile->links('pagination::bootstrap-5') }}
+                </div>
+                
+                <div class="if-table-displays-in-desktop">
+                    {{ $fetch_data_absensi_karyawan_desktop->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
     </main>

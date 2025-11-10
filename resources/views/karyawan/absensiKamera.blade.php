@@ -13,7 +13,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi Kamera</title>
+    <title>INGOO || Absensi Kamera ({{ session('name') }})</title>
 </head>
 
 <style>
@@ -27,9 +27,32 @@
     .hide-on-small {
         display: inline;
     }
+    .camera-container {
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
+    }
+    .camera-preview {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        border: 1px solid #ddd;
+        background: #000;
+        display: block;
+    }
+    .preview-image {
+        width: 100%;
+        max-width: 360px;
+        margin: 10px auto 0;
+        border: 1px solid #ccc;
+        display: none;
+    }
     @media (max-width: 500px) {
         .hide-on-small {
             display: none;
+        }
+        .camera-container {
+            width: 90%;
         }
     }
 </style>
@@ -62,15 +85,16 @@
             <div class="d-flex justify-content-center">
                 <div class="card">
                     <div class="card-body">
-                        <div class="text-center m-3">
-                            <h3>Absensi Kamera</h3>
-                            <p>Silakan ambil foto untuk absensi. Pastikan kamera telah diizinkan oleh browser.</p>
+                        <div class="text-center m-2">
+                            <h1 class="text-center font-bold mb-2">Absensi Kamera</h1>
+                            <p class="mb-2">Silakan ambil foto untuk absensi ( Pastikan kamera telah diizinkan oleh browser ).</p>
+                            <div id="cameraStatus" class="alert alert-info" role="alert" style="display:none"></div>
 
                             <!-- Camera preview and capture -->
-                            <div class="mb-3">
-                                <video id="video" width="360" height="270" autoplay playsinline style="border:1px solid #ddd;background:#000"></video>
+                            <div class="mb-3 camera-container">
+                                <video id="video" class="camera-preview" autoplay playsinline></video>
                                 <canvas id="canvas" width="360" height="270" style="display:none"></canvas>
-                                <img id="previewImage" src="#" alt="Preview" style="display:none; max-width:360px; margin-top:10px; border:1px solid #ccc"> 
+                                <img id="previewImage" src="#" alt="Preview" class="preview-image" />
                             </div>
 
                             <!-- Fallback file input for devices that don't support getUserMedia -->
@@ -82,10 +106,17 @@
                                 @csrf
                                 <input type="hidden" name="photo" id="photoInput">
                                 <div class="d-flex justify-content-center gap-2">
-                                    <button type="button" id="startCameraBtn" class="btn btn-outline-primary">Start Camera</button>
-                                    <button type="button" id="captureBtn" class="btn btn-primary" disabled>Capture</button>
-                                    <button type="button" id="retakeBtn" class="btn btn-warning" style="display:none">Retake</button>
-                                    <button type="submit" id="submitBtn" class="btn btn-success" disabled>Submit Absensi</button>
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-dark dropdown-toggle" type="button" id="cameraDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fa fa-camera" aria-hidden="true"></i> </i><span class="hide-on-small"> Menu Camera </span>
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="cameraDropdown">
+                                            <li><a class="dropdown-item" href="#" id="startCameraDropdown"><i class="fa fa-camera-retro" aria-hidden="true"></i> Mulai Camera</a></li>
+                                            <li><a class="dropdown-item" href="#" id="captureDropdown"><i class="fa fa-image" aria-hidden="true"></i> Ambil Gambar</a></li>
+                                        </ul>
+                                    </div>
+                                    <button type="button" id="retakeBtn" class="btn btn-dark" style="display:none"><i class="fa fa-repeat" aria-hidden="true"></i><span class="hide-on-small"> Retake </span></button>
+                                    <button type="submit" id="submitBtn" class="btn btn-dark" disabled><i class="fa fa-paper-plane" aria-hidden="true"></i><span class="hide-on-small"> Submit </span></button>
                                 </div>
                             </form>
                         </div>
@@ -95,25 +126,75 @@
         </div>
     </main>
     <script>
-        let stream;
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const previewImage = document.getElementById('previewImage');
-        const photoInput = document.getElementById('photoInput');
-        const startCameraBtn = document.getElementById('startCameraBtn');
-        const captureBtn = document.getElementById('captureBtn');
-        const retakeBtn = document.getElementById('retakeBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const cameraInput = document.getElementById('cameraInput');
+    let stream;
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const previewImage = document.getElementById('previewImage');
+    const photoInput = document.getElementById('photoInput');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const cameraInput = document.getElementById('cameraInput');
+    // Dropdown menu actions
+    const startCameraDropdown = document.getElementById('startCameraDropdown');
+    const captureDropdown = document.getElementById('captureDropdown');
+    let cameraActive = false;
+
+        async function checkCameraPermission() {
+            // Show current permission state if Permissions API is available
+            const statusEl = document.getElementById('cameraStatus');
+            if (navigator.permissions && navigator.permissions.query) {
+                try {
+                    const perm = await navigator.permissions.query({ name: 'camera' });
+                    if (perm.state === 'granted') {
+                        statusEl.className = 'alert alert-success';
+                        statusEl.textContent = 'Akses kamera sudah diberikan. Tekan "Mulai Camera" untuk memulai.';
+                        statusEl.style.display = 'block';
+                        return 'granted';
+                    } else if (perm.state === 'prompt') {
+                        statusEl.className = 'alert alert-info';
+                        statusEl.textContent = 'Browser akan meminta izin kamera saat Anda menekan "Mulai Camera".';
+                        statusEl.style.display = 'block';
+                        return 'prompt';
+                    } else {
+                        statusEl.className = 'alert alert-danger';
+                        statusEl.innerHTML = 'Akses kamera diblokir. Silakan buka pengaturan browser dan izinkan akses kamera untuk situs ini.';
+                        statusEl.style.display = 'block';
+                        return 'denied';
+                    }
+                } catch (e) {
+                    // some browsers may throw for 'camera' permission query
+                }
+            }
+            // Fallback: check for mediaDevices support
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                statusEl.className = 'alert alert-warning';
+                statusEl.innerHTML = 'Perangkat Anda tidak mendukung akses kamera lewat browser. Silakan gunakan tombol "Mulai Camera" atau pilih file dari perangkat.';
+                statusEl.style.display = 'block';
+                return 'unsupported';
+            }
+            // default
+            statusEl.style.display = 'none';
+            return 'unknown';
+        }
 
         async function startCamera() {
+            const statusEl = document.getElementById('cameraStatus');
+            const perm = await checkCameraPermission();
+            if (perm === 'denied') {
+                return;
+            }
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+                // Ubah facingMode ke 'user' agar menggunakan kamera depan
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
                 video.srcObject = stream;
-                captureBtn.disabled = false;
-                startCameraBtn.disabled = true;
+                cameraActive = true;
+                statusEl.className = 'alert alert-success';
+                statusEl.textContent = 'Kamera aktif (depan). Tekan "Ambil Gambar" untuk mengambil foto.';
+                statusEl.style.display = 'block';
             } catch (err) {
-                // fallback: trigger file input if camera access denied or not available
+                statusEl.className = 'alert alert-danger';
+                statusEl.innerHTML = 'Tidak dapat mengakses kamera: ' + (err && err.message ? err.message : err) + '<br/>1.Silakan periksa pengaturan izin browser <br/>2.Cek perangkat anda yang lainnya. <br/>3.Silahkan upload dari gallery HP anda/ PC anda.';
+                statusEl.style.display = 'block';
                 cameraInput.click();
             }
         }
@@ -123,10 +204,11 @@
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
             }
-            startCameraBtn.disabled = false;
+            cameraActive = false;
         }
 
-        captureBtn.addEventListener('click', function () {
+        function capturePhoto() {
+            if (!cameraActive) return;
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
@@ -135,16 +217,14 @@
             photoInput.value = dataUrl;
             submitBtn.disabled = false;
             retakeBtn.style.display = 'inline-block';
-            captureBtn.disabled = true;
             stopCamera();
-        });
+        }
 
         retakeBtn.addEventListener('click', function () {
             previewImage.style.display = 'none';
             photoInput.value = '';
             submitBtn.disabled = true;
             retakeBtn.style.display = 'none';
-            captureBtn.disabled = false;
             startCamera();
         });
 
@@ -158,15 +238,21 @@
                 photoInput.value = e.target.result;
                 submitBtn.disabled = false;
                 retakeBtn.style.display = 'inline-block';
-                captureBtn.disabled = true;
             };
             reader.readAsDataURL(file);
         });
 
-        startCameraBtn.addEventListener('click', startCamera);
+        startCameraDropdown.addEventListener('click', function(e) {
+            e.preventDefault();
+            startCamera();
+        });
+        captureDropdown.addEventListener('click', function(e) {
+            e.preventDefault();
+            capturePhoto();
+        });
 
-        // stop camera when leaving page
-        window.addEventListener('beforeunload', stopCamera);
+    // stop camera when leaving page
+    window.addEventListener('beforeunload', stopCamera);
     </script>
 
 </body>
