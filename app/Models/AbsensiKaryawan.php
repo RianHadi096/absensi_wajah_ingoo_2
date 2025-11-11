@@ -14,7 +14,7 @@ class AbsensiKaryawan extends Model
         'tanggal_absensi',
         'waktu_absensi',
         'status_absensi',
-        'koodinat',
+        'koordinat',
     ];
 
     public function karyawan()
