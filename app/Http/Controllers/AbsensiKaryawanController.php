@@ -74,12 +74,10 @@ class AbsensiKaryawanController extends Controller
         $hour_only = Carbon::now()->toDayDateTimeString();
 
         
-        //mengambil nama karyawan berdasarkan id_karyawan dari tabel absensi_karyawan
-        $get_nama_karyawan = AbsensiKaryawan::
-            join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
-            ->where('absensi_karyawan.id_karyawan', session('user_id'))
-            ->select('profile_karyawan.nama_lengkap')
-            ->first();
+        //ambil data karyawan (profile) berdasarkan session user id
+        $profile = Karyawan::find(session('user_id'));
+        // fallback display name if profile missing
+        $displayName = $profile && !empty($profile->nama_lengkap) ? $profile->nama_lengkap : (session('name') ?? session('user_name') ?? 'Karyawan');
 
         //menentukan status absensi
         if (Carbon::now()->lessThanOrEqualTo($jam_masuk_kerja)) {
@@ -100,14 +98,33 @@ class AbsensiKaryawanController extends Controller
                 'status_absensi' => $status_absensi,
                 'koordinat' => '',
             ]);
-        } else {
-           return redirect()->route('karyawan/histori_absensi')->with('message', 'Dear ' . $get_nama_karyawan->nama_lengkap . ' , jam kerjanya sudah habis.');
-        }
+          } else {
+              return redirect()->route('karyawan/histori_absensi')->with('message', 'Dear ' . $displayName . ' , jam kerjanya sudah habis.');
+          }
 
-        return redirect()->route('karyawan/histori_absensi')->with('message', 'Absensi ' . $get_nama_karyawan->nama_lengkap . ' berhasil terekam.');
+          return redirect()->route('karyawan/histori_absensi')->with('message', 'Absensi ' . $displayName . ' berhasil terekam.');
     }
 
     public function exportToExcel(){
         return Excel::download(new AbsensiKaryawanExport,'absensi_karyawan_ingoo_'.Carbon::now().'.xlsx');
+    }
+
+    public function verifyFace(Request $request)
+{
+        $userId = session('user_id');
+        $karyawan = Karyawan::find($userId);
+        
+        if (!$karyawan || !$karyawan->imageFileLocation) {
+            return response()->json(['success' => false, 'match' => false]);
+        }
+        
+        // Implement face descriptor comparison here
+        // Compare $request->face_descriptor with reference from database
+        // Use Euclidean distance: sqrt(sum((a[i] - b[i])^2))
+        
+        $distance = 0.3; // Threshold for face match (adjust as needed)
+        $match = $distance < 0.3; // Lower distance = better match
+        
+        return response()->json(['success' => true, 'match' => $match]);
     }
 }
