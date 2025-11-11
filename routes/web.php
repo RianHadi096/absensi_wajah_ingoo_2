@@ -38,6 +38,9 @@ Route::get('karyawan/absensi_kamera', [AbsensiKaryawanController::class, 'absens
 
 //Route::post('absensiKamera/upload', [AbsensiKaryawanController::class, 'upload'])->middleware('auth')->name('absensiKamera.upload');
 Route::post('karyawan/absensi_kamera/rekam', [AbsensiKaryawanController::class, 'testManual'])->middleware('auth')->name('karyawan/absensi_kamera/rekam');
+// verify face via POST (expects JSON) - protected by auth so session user is available
+Route::post('karyawan/absensi_kamera/verify', [AbsensiKaryawanController::class, 'verifyFace'])->middleware('auth')->name('karyawan/absensi_kamera/verify');
+
 
 //data karyawan
 Route::get('admin/karyawan', [KaryawanController::class, 'index'])->name('admin.karyawan');

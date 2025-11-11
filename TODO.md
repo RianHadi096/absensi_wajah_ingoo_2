@@ -1,3 +1,0 @@
-- Download face-api.js minified to resources/js/face-api.min.js ✓
-- Download face detection models to resources/weights/ ✓
-- Update absensiKamera.blade.php to include face-api.js, load models, detect face on capture (enable submit only if face detected) ✓

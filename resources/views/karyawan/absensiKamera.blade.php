@@ -14,7 +14,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INGOO || Absensi Kamera ({{ session('name') }})</title>
+    <title>INGOO || Absensi Kamera ({{ session('user_name') }})</title>
 </head>
 
 <style>
@@ -127,197 +127,420 @@
         </div>
     </main>
     <script>
-    let stream;
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const previewImage = document.getElementById('previewImage');
-    const photoInput = document.getElementById('photoInput');
-    const retakeBtn = document.getElementById('retakeBtn');
-    const submitBtn = document.getElementById('submitBtn');
-    const cameraInput = document.getElementById('cameraInput');
-    // Dropdown menu actions
-    const startCameraDropdown = document.getElementById('startCameraDropdown');
-    const captureDropdown = document.getElementById('captureDropdown');
-    let cameraActive = false;
-    let modelsLoaded = false;
+        // ============================================================================
+        // FACE RECOGNITION ATTENDANCE SYSTEM
+        // Initialize camera, load face detection models, and verify employee identity
+        // ============================================================================
 
-        async function loadModels() {
+        <?php
+            use App\Models\Karyawan;
+            $karyawan = null;
             try {
-                await faceapi.nets.tinyFaceDetector.loadFromUri('{{ asset("weights") }}');
-                await faceapi.nets.faceLandmark68Net.loadFromUri('{{ asset("weights") }}');
-                modelsLoaded = true;
-                console.log('Face detection models loaded successfully');
+                $karyawan = Karyawan::find(session('user_id'));
+            } catch (Exception $e) {
+                $karyawan = null;
+            }
+            $referenceImageUrl = '';
+            if ($karyawan && !empty($karyawan->imageFileLocation)) {
+                $referenceImageUrl = asset('storage/' . $karyawan->imageFileLocation);
+            }
+        ?>
+
+        const VIDEO_ID = 'video';
+        const CANVAS_ID = 'canvas';
+        const PREVIEW_IMAGE_ID = 'previewImage';
+        const CAMERA_STATUS_ID = 'cameraStatus';
+        const PHOTO_INPUT_ID = 'photoInput';
+        const SUBMIT_BTN_ID = 'submitBtn';
+        const RETAKE_BTN_ID = 'retakeBtn';
+        const ABSENSI_FORM_ID = 'absensiForm';
+        const START_CAMERA_DROPDOWN_ID = 'startCameraDropdown';
+        const CAPTURE_DROPDOWN_ID = 'captureDropdown';
+
+        let stream = null;
+        let modelsLoaded = false;
+        let currentFaceDescriptor = null;
+        let referenceDescriptor = null;
+    const REFERENCE_IMAGE_URL = {!! json_encode($referenceImageUrl) !!};
+
+        /**
+         * Recommended TinyFaceDetector options helper
+         * - inputSize: 320/416/512 (bigger -> more accurate, slower)
+         * - scoreThreshold: lower -> more detections (may increase false positives)
+         */
+        function getTinyOptions() {
+            return new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.35 });
+        }
+
+        // ============================================================================
+        // 1. INITIALIZE CAMERA
+        // ============================================================================
+
+        /**
+         * Start camera using getUserMedia API
+         * Supports both desktop webcam and mobile front camera
+         */
+        async function initializeCamera() {
+            try {
+                const statusElement = document.getElementById(CAMERA_STATUS_ID);
+                statusElement.style.display = 'block';
+                statusElement.className = 'alert alert-info';
+                statusElement.textContent = 'Mengakses kamera...';
+
+                const constraints = {
+                    video: {
+                        facingMode: 'user', // Front camera
+                        width: { ideal: 1280 },
+                        height: { ideal: 960 }
+                    },
+                    audio: false
+                };
+
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById(VIDEO_ID);
+                videoElement.srcObject = stream;
+
+                // Wait for video to load
+                await new Promise(resolve => {
+                    videoElement.onloadedmetadata = () => {
+                        videoElement.play();
+                        // Make canvas match actual video size for accurate detection
+                        const canvasElement = document.getElementById(CANVAS_ID);
+                        canvasElement.width = videoElement.videoWidth || canvasElement.width;
+                        canvasElement.height = videoElement.videoHeight || canvasElement.height;
+                        resolve();
+                    };
+                });
+
+                statusElement.className = 'alert alert-success';
+                statusElement.textContent = 'Kamera berhasil diaktifkan ✓';
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 3000);
+
+                console.log('Camera initialized successfully');
             } catch (error) {
-                console.error('Error loading models:', error);
-                alert('Failed to load face detection models. Please check the console for details.');
+                console.error('Camera error:', error);
+                const statusElement = document.getElementById(CAMERA_STATUS_ID);
+                statusElement.className = 'alert alert-danger';
+                statusElement.textContent = 'Error: ' + (error.name === 'NotAllowedError' 
+                    ? 'Izin kamera ditolak. Silakan izinkan akses kamera di pengaturan browser.' 
+                    : 'Kamera tidak tersedia.');
+                statusElement.style.display = 'block';
             }
         }
 
-        async function checkCameraPermission() {
-            // Show current permission state if Permissions API is available
-            const statusEl = document.getElementById('cameraStatus');
-            if (navigator.permissions && navigator.permissions.query) {
-                try {
-                    const perm = await navigator.permissions.query({ name: 'camera' });
-                    if (perm.state === 'granted') {
-                        statusEl.className = 'alert alert-success';
-                        statusEl.textContent = 'Akses kamera sudah diberikan. Tekan "Mulai Camera" untuk memulai.';
-                        statusEl.style.display = 'block';
-                        return 'granted';
-                    } else if (perm.state === 'prompt') {
-                        statusEl.className = 'alert alert-info';
-                        statusEl.textContent = 'Browser akan meminta izin kamera saat Anda menekan "Mulai Camera".';
-                        statusEl.style.display = 'block';
-                        return 'prompt';
-                    } else {
-                        statusEl.className = 'alert alert-danger';
-                        statusEl.innerHTML = 'Akses kamera diblokir. Silakan buka pengaturan browser dan izinkan akses kamera untuk situs ini.';
-                        statusEl.style.display = 'block';
-                        return 'denied';
-                    }
-                } catch (e) {
-                    // some browsers may throw for 'camera' permission query
-                }
-            }
-            // Fallback: check for mediaDevices support
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                statusEl.className = 'alert alert-warning';
-                statusEl.innerHTML = 'Perangkat Anda tidak mendukung akses kamera lewat browser. Silakan gunakan tombol "Mulai Camera" atau pilih file dari perangkat.';
-                statusEl.style.display = 'block';
-                return 'unsupported';
-            }
-            // default
-            statusEl.style.display = 'none';
-            return 'unknown';
-        }
+        // ============================================================================
+        // 2. LOAD FACE-API MODELS
+        // ============================================================================
 
-        async function startCamera() {
-            const statusEl = document.getElementById('cameraStatus');
-            const perm = await checkCameraPermission();
-            if (perm === 'denied') {
-                return;
-            }
+        /**
+         * Load face detection and recognition models
+         * Models: TinyFaceDetector, FaceLandmark68Net, FaceRecognitionNet
+         */
+        async function loadFaceApiModels() {
             try {
-                // Ubah facingMode ke 'user' agar menggunakan kamera depan
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-                video.srcObject = stream;
-                cameraActive = true;
-                statusEl.className = 'alert alert-success';
-                statusEl.textContent = 'Kamera aktif (depan). Tekan "Ambil Gambar" untuk mengambil foto.';
-                statusEl.style.display = 'block';
-            } catch (err) {
-                statusEl.className = 'alert alert-danger';
-                statusEl.innerHTML = 'Tidak dapat mengakses kamera: ' + (err && err.message ? err.message : err) + '<br/>1.Silakan periksa pengaturan izin browser <br/>2.Cek perangkat anda yang lainnya. <br/>3.Silahkan upload dari gallery HP anda/ PC anda.';
-                statusEl.style.display = 'block';
-                cameraInput.click();
+                const statusElement = document.getElementById(CAMERA_STATUS_ID);
+                statusElement.style.display = 'block';
+                statusElement.className = 'alert alert-info';
+                statusElement.textContent = 'Memuat model face detection...';
+
+                // Model paths from assets
+                const MODEL_URL = '{{ asset("weights") }}';
+
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                ]);
+
+                modelsLoaded = true;
+                statusElement.className = 'alert alert-success';
+                statusElement.textContent = 'Model face detection berhasil dimuat ✓';
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 3000);
+
+                console.log('Face-api models loaded successfully');
+            } catch (error) {
+                console.error('Model loading error:', error);
+                const statusElement = document.getElementById(CAMERA_STATUS_ID);
+                statusElement.className = 'alert alert-danger';
+                statusElement.textContent = 'Error: Gagal memuat model face detection. ' + error.message;
+                statusElement.style.display = 'block';
             }
         }
 
-        function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-            cameraActive = false;
+        // ============================================================================
+        // 3. CAPTURE IMAGE FROM CAMERA
+        // ============================================================================
+
+        /**
+         * Capture image from video stream
+         */
+        function captureImage() {
+            const videoElement = document.getElementById(VIDEO_ID);
+            const canvasElement = document.getElementById(CANVAS_ID);
+            const previewImageElement = document.getElementById(PREVIEW_IMAGE_ID);
+
+            // Ensure canvas size matches current video frame (critical on some devices)
+            canvasElement.width = videoElement.videoWidth || canvasElement.width;
+            canvasElement.height = videoElement.videoHeight || canvasElement.height;
+
+            const ctx = canvasElement.getContext('2d');
+            // draw the current video frame into the canvas
+            ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+            // Convert canvas to data URL
+            const imageData = canvasElement.toDataURL('image/jpeg', 0.9);
+            previewImageElement.src = imageData;
+            previewImageElement.style.display = 'block';
+
+            // Store for later submission
+            document.getElementById(PHOTO_INPUT_ID).value = imageData;
+
+            // Hide video, show preview
+            videoElement.style.display = 'none';
+            
+            // Show retake button, disable submit button initially
+            document.getElementById(RETAKE_BTN_ID).style.display = 'inline-block';
+            document.getElementById(SUBMIT_BTN_ID).disabled = true;
+
+            console.log('Image captured');
+            return imageData;
         }
 
-        async function capturePhoto() {
-            if (!cameraActive) return;
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-            previewImage.src = dataUrl;
-            previewImage.style.display = 'block';
-            photoInput.value = dataUrl;
-            retakeBtn.style.display = 'inline-block';
-            stopCamera();
+        // ============================================================================
+        // 4. DETECT AND EXTRACT FACE DESCRIPTOR
+        // ============================================================================
 
-            // Detect face in the captured image
-            if (modelsLoaded) {
-                try {
-                    const img = new Image();
-                    img.src = dataUrl;
-                    await img.decode();
-                    const detections = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions());
-                    if (detections.length > 0) {
-                        submitBtn.disabled = false;
-                        alert('Face detected! You can now submit the attendance.');
-                    } else {
-                        submitBtn.disabled = true;
-                        alert('No face detected in the image. Please retake the photo.');
-                    }
-                } catch (error) {
-                    console.error('Error detecting face:', error);
-                    submitBtn.disabled = true;
-                    alert('Error detecting face. Please try again.');
+        /**
+         * Detect face in captured image and extract descriptor
+         * Returns face descriptor for comparison
+         */
+        async function detectAndExtractFaceDescriptor() {
+            try {
+                if (!modelsLoaded) {
+                    throw new Error('Face-api models not loaded');
                 }
-            } else {
-                alert('Face detection models are not loaded yet. Please wait and try again.');
-                submitBtn.disabled = true;
+
+                const canvasElement = document.getElementById(CANVAS_ID);
+                const statusElement = document.getElementById(CAMERA_STATUS_ID);
+
+                statusElement.style.display = 'block';
+                statusElement.className = 'alert alert-info';
+                statusElement.textContent = 'Mendeteksi wajah...';
+
+                // Detect single face with tuned options. Using detectSingleFace avoids multiple-face ambiguity.
+                const detection = await faceapi
+                    .detectSingleFace(canvasElement, getTinyOptions())
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+
+                if (!detection) {
+                    statusElement.className = 'alert alert-warning';
+                    statusElement.textContent = 'Wajah tidak terdeteksi. Silakan ambil foto kembali dengan pencahayaan yang baik dan wajah menghadap kamera.';
+                    document.getElementById(SUBMIT_BTN_ID).disabled = true;
+                    return null;
+                }
+
+                currentFaceDescriptor = detection.descriptor;
+
+                statusElement.className = 'alert alert-success';
+                statusElement.textContent = 'Wajah terdeteksi dengan baik ✓ Siap untuk verifikasi...';
+
+                console.log('Face detected and descriptor extracted');
+                return detection;
+            } catch (error) {
+                console.error('Face detection error:', error);
+                const statusElement = document.getElementById(CAMERA_STATUS_ID);
+                statusElement.className = 'alert alert-danger';
+                statusElement.textContent = 'Error: Gagal mendeteksi wajah. ' + error.message;
+                document.getElementById(SUBMIT_BTN_ID).disabled = true;
+                return null;
             }
         }
 
-        retakeBtn.addEventListener('click', function () {
-            previewImage.style.display = 'none';
-            photoInput.value = '';
-            submitBtn.disabled = true;
-            retakeBtn.style.display = 'none';
-            startCamera();
-        });
+        // ============================================================================
+        // 5. VERIFY FACE WITH DATABASE
+        // ============================================================================
 
-        cameraInput.addEventListener('change', async function () {
-            const file = this.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function (e) {
-                const dataUrl = e.target.result;
-                previewImage.src = dataUrl;
-                previewImage.style.display = 'block';
-                photoInput.value = dataUrl;
-                retakeBtn.style.display = 'inline-block';
+        /**
+         * Fetch reference face descriptor from server
+         * Compares with captured face using Euclidean distance
+         */
+        async function verifyFaceWithDatabase(photoData) {
+            try {
+                const statusElement = document.getElementById(CAMERA_STATUS_ID);
+                statusElement.style.display = 'block';
+                statusElement.className = 'alert alert-info';
+                statusElement.textContent = 'Memverifikasi wajah dengan database...';
 
-                // Detect face in the uploaded image
-                if (modelsLoaded) {
+                // If we don't have a reference descriptor computed client-side, try to load the reference image
+                if (!referenceDescriptor && REFERENCE_IMAGE_URL) {
                     try {
                         const img = new Image();
-                        img.src = dataUrl;
-                        await img.decode();
-                        const detections = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions());
-                        if (detections.length > 0) {
-                            submitBtn.disabled = false;
-                            alert('Face detected! You can now submit the attendance.');
+                        img.crossOrigin = 'anonymous';
+                        img.src = REFERENCE_IMAGE_URL;
+                        await new Promise((resolve, reject) => {
+                            img.onload = resolve;
+                            img.onerror = () => {
+                                console.warn('Gagal memuat gambar referensi dari', REFERENCE_IMAGE_URL);
+                                resolve();
+                            };
+                        });
+                        const refDetection = await faceapi
+                            .detectSingleFace(img, getTinyOptions())
+                            .withFaceLandmarks()
+                            .withFaceDescriptor();
+                        if (refDetection && refDetection.descriptor) {
+                            referenceDescriptor = refDetection.descriptor;
+                            console.log('Reference descriptor computed from stored image');
                         } else {
-                            submitBtn.disabled = true;
-                            alert('No face detected in the image. Please choose another image.');
+                            console.warn('Tidak dapat mengekstrak descriptor dari foto referensi');
                         }
-                    } catch (error) {
-                        console.error('Error detecting face:', error);
-                        submitBtn.disabled = true;
-                        alert('Error detecting face. Please try again.');
+                    } catch (e) {
+                        console.error('Error loading reference image:', e);
                     }
-                } else {
-                    alert('Face detection models are not loaded yet. Please wait and try again.');
-                    submitBtn.disabled = true;
                 }
-            };
-            reader.readAsDataURL(file);
-        });
 
-        startCameraDropdown.addEventListener('click', function(e) {
-            e.preventDefault();
-            startCamera();
-        });
-        captureDropdown.addEventListener('click', function(e) {
-            e.preventDefault();
-            capturePhoto();
-        });
+                if (!referenceDescriptor) {
+                    statusElement.className = 'alert alert-warning';
+                    statusElement.textContent = 'Foto referensi tidak tersedia atau tidak dapat diproses. Verifikasi tidak dapat dilakukan.';
+                    document.getElementById(SUBMIT_BTN_ID).disabled = true;
+                    return false;
+                }
 
-        // Load models on page load
-        window.addEventListener('load', loadModels);
+                if (!currentFaceDescriptor) {
+                    statusElement.className = 'alert alert-warning';
+                    statusElement.textContent = 'Tidak ada descriptor wajah yang tertangkap. Silakan ambil foto terlebih dahulu.';
+                    document.getElementById(SUBMIT_BTN_ID).disabled = true;
+                    return false;
+                }
 
-    // stop camera when leaving page
-    window.addEventListener('beforeunload', stopCamera);
+                const distance = faceapi.euclideanDistance(currentFaceDescriptor, referenceDescriptor);
+                console.log('Descriptor distance:', distance);
+
+                const THRESHOLD = 0.5; // tweak between ~0.4 (strict) and 0.6 (lenient)
+
+                if (distance <= THRESHOLD) {
+                    statusElement.className = 'alert alert-success';
+                    statusElement.textContent = 'Verifikasi berhasil! Wajah sesuai dengan data karyawan ✓ (distance: ' + distance.toFixed(3) + ')';
+                    document.getElementById(SUBMIT_BTN_ID).disabled = false;
+                    return true;
+                } else {
+                    statusElement.className = 'alert alert-danger';
+                    statusElement.textContent = 'Verifikasi gagal! Wajah tidak sesuai dengan data karyawan. Silakan coba lagi. (distance: ' + distance.toFixed(3) + ')';
+                    document.getElementById(SUBMIT_BTN_ID).disabled = true;
+                    return false;
+                }
+            } catch (error) {
+                console.error('Verification error:', error);
+                const statusElement = document.getElementById(CAMERA_STATUS_ID);
+                statusElement.className = 'alert alert-danger';
+                statusElement.textContent = 'Error: Gagal melakukan verifikasi. ' + error.message;
+                document.getElementById(SUBMIT_BTN_ID).disabled = true;
+                return false;
+            }
+        }
+
+        // ============================================================================
+        // 6. RETAKE PHOTO
+        // ============================================================================
+
+        /**
+         * Clear captured image and go back to camera
+         */
+        function retakePhoto() {
+            const videoElement = document.getElementById(VIDEO_ID);
+            const previewImageElement = document.getElementById(PREVIEW_IMAGE_ID);
+            const statusElement = document.getElementById(CAMERA_STATUS_ID);
+
+            videoElement.style.display = 'block';
+            previewImageElement.style.display = 'none';
+            document.getElementById(RETAKE_BTN_ID).style.display = 'none';
+            document.getElementById(SUBMIT_BTN_ID).disabled = true;
+            document.getElementById(PHOTO_INPUT_ID).value = '';
+            currentFaceDescriptor = null;
+
+            statusElement.style.display = 'none';
+
+            console.log('Photo retaken');
+        }
+
+        // ============================================================================
+        // 7. EVENT LISTENERS
+        // ============================================================================
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Initialize camera and load models on page load
+            await initializeCamera();
+            await loadFaceApiModels();
+
+            // Pre-compute reference descriptor from stored image (if available) to speed up verification
+            if (REFERENCE_IMAGE_URL) {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.src = REFERENCE_IMAGE_URL;
+                    await new Promise((resolve) => {
+                        img.onload = resolve;
+                        img.onerror = resolve; // resolve even on error to avoid blocking
+                    });
+                    const refDetection = await faceapi
+                        .detectSingleFace(img, getTinyOptions())
+                        .withFaceLandmarks()
+                        .withFaceDescriptor();
+                    if (refDetection && refDetection.descriptor) {
+                        referenceDescriptor = refDetection.descriptor;
+                        console.log('Preloaded reference descriptor from stored image');
+                    } else {
+                        console.warn('Could not extract descriptor from reference image');
+                    }
+                } catch (e) {
+                    console.error('Error preloading reference image:', e);
+                }
+            }
+
+            // Start Camera button
+            document.getElementById(START_CAMERA_DROPDOWN_ID).addEventListener('click', function (e) {
+                e.preventDefault();
+                initializeCamera();
+            });
+
+            // Capture Image button
+            document.getElementById(CAPTURE_DROPDOWN_ID).addEventListener('click', async function (e) {
+                e.preventDefault();
+                const imageData = captureImage();
+                if (imageData) {
+                    await detectAndExtractFaceDescriptor();
+                    if (currentFaceDescriptor) {
+                        await verifyFaceWithDatabase(imageData);
+                    }
+                }
+            });
+
+            // Retake button
+            document.getElementById(RETAKE_BTN_ID).addEventListener('click', function (e) {
+                e.preventDefault();
+                retakePhoto();
+            });
+
+            // Form submission
+            document.getElementById(ABSENSI_FORM_ID).addEventListener('submit', function (e) {
+                if (document.getElementById(SUBMIT_BTN_ID).disabled) {
+                    e.preventDefault();
+                    alert('Silakan verifikasi wajah terlebih dahulu!');
+                }
+            });
+
+            // Stop camera when user leaves the page
+            window.addEventListener('beforeunload', function () {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            });
+        });
     </script>
-
 </body>
 </html>
