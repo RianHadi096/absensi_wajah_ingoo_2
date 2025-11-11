@@ -27,14 +27,21 @@ class AbsensiKaryawan extends Model
         'waktu_absensi' => 'datetime',
     ];
 
-    public function getWaktuAbsensiAttribute($value)
+    public function getTanggalAbsensiAttribute($value = null)
     {
-        return Carbon::parse($value)->setTimezone('Asia/Jakarta')->format('H:i:s');
+        $val = $value ?? ($this->attributes['tanggal_absensi'] ?? null);
+        if (empty($val)) {
+            return null;
+        }
+        return Carbon::parse($val)->setTimezone('Asia/Jakarta')->format('d-m-Y');
     }
-
-    public function getTanggalAbsensiAttribute($value)
+    public function getWaktuAbsensiAttribute($value = null)
     {
-        return Carbon::parse($value)->setTimezone('Asia/Jakarta')->format('d-m-Y');
+        $val = $value ?? ($this->attributes['waktu_absensi'] ?? null);
+        if (empty($val)) {
+            return null;
+        }
+        return Carbon::parse($val)->setTimezone('Asia/Jakarta')->format('H:i:s');
     }
     
 }
