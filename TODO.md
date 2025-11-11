@@ -1,2 +1,3 @@
-- [x] Fix pagination in historyAbsensiMaster() method: Change from paginate(3)->get() to paginate(7)
-- [x] Fix pagination in historyAbsensi() method: Change from get()->paginate(3) to paginate(7)
+- Download face-api.js minified to resources/js/face-api.min.js ✓
+- Download face detection models to resources/weights/ ✓
+- Update absensiKamera.blade.php to include face-api.js, load models, detect face on capture (enable submit only if face detected) ✓

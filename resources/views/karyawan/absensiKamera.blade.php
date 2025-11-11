@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <!-- Camera Link-->
+<script src="{{ asset('js/face-api.min.js') }}"></script>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
@@ -138,6 +139,19 @@
     const startCameraDropdown = document.getElementById('startCameraDropdown');
     const captureDropdown = document.getElementById('captureDropdown');
     let cameraActive = false;
+    let modelsLoaded = false;
+
+        async function loadModels() {
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri('{{ asset("weights") }}');
+                await faceapi.nets.faceLandmark68Net.loadFromUri('{{ asset("weights") }}');
+                modelsLoaded = true;
+                console.log('Face detection models loaded successfully');
+            } catch (error) {
+                console.error('Error loading models:', error);
+                alert('Failed to load face detection models. Please check the console for details.');
+            }
+        }
 
         async function checkCameraPermission() {
             // Show current permission state if Permissions API is available
@@ -207,7 +221,7 @@
             cameraActive = false;
         }
 
-        function capturePhoto() {
+        async function capturePhoto() {
             if (!cameraActive) return;
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -215,9 +229,32 @@
             previewImage.src = dataUrl;
             previewImage.style.display = 'block';
             photoInput.value = dataUrl;
-            submitBtn.disabled = false;
             retakeBtn.style.display = 'inline-block';
             stopCamera();
+
+            // Detect face in the captured image
+            if (modelsLoaded) {
+                try {
+                    const img = new Image();
+                    img.src = dataUrl;
+                    await img.decode();
+                    const detections = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions());
+                    if (detections.length > 0) {
+                        submitBtn.disabled = false;
+                        alert('Face detected! You can now submit the attendance.');
+                    } else {
+                        submitBtn.disabled = true;
+                        alert('No face detected in the image. Please retake the photo.');
+                    }
+                } catch (error) {
+                    console.error('Error detecting face:', error);
+                    submitBtn.disabled = true;
+                    alert('Error detecting face. Please try again.');
+                }
+            } else {
+                alert('Face detection models are not loaded yet. Please wait and try again.');
+                submitBtn.disabled = true;
+            }
         }
 
         retakeBtn.addEventListener('click', function () {
@@ -228,16 +265,40 @@
             startCamera();
         });
 
-        cameraInput.addEventListener('change', function () {
+        cameraInput.addEventListener('change', async function () {
             const file = this.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function (e) {
-                previewImage.src = e.target.result;
+            reader.onload = async function (e) {
+                const dataUrl = e.target.result;
+                previewImage.src = dataUrl;
                 previewImage.style.display = 'block';
-                photoInput.value = e.target.result;
-                submitBtn.disabled = false;
+                photoInput.value = dataUrl;
                 retakeBtn.style.display = 'inline-block';
+
+                // Detect face in the uploaded image
+                if (modelsLoaded) {
+                    try {
+                        const img = new Image();
+                        img.src = dataUrl;
+                        await img.decode();
+                        const detections = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions());
+                        if (detections.length > 0) {
+                            submitBtn.disabled = false;
+                            alert('Face detected! You can now submit the attendance.');
+                        } else {
+                            submitBtn.disabled = true;
+                            alert('No face detected in the image. Please choose another image.');
+                        }
+                    } catch (error) {
+                        console.error('Error detecting face:', error);
+                        submitBtn.disabled = true;
+                        alert('Error detecting face. Please try again.');
+                    }
+                } else {
+                    alert('Face detection models are not loaded yet. Please wait and try again.');
+                    submitBtn.disabled = true;
+                }
             };
             reader.readAsDataURL(file);
         });
@@ -250,6 +311,9 @@
             e.preventDefault();
             capturePhoto();
         });
+
+        // Load models on page load
+        window.addEventListener('load', loadModels);
 
     // stop camera when leaving page
     window.addEventListener('beforeunload', stopCamera);
