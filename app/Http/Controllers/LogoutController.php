@@ -13,12 +13,12 @@ class LogoutController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login')->with('message', 'You have been logged out.');
+        return redirect('/login')->with('message', 'Anda telah logout.');
     }
     public function admin_logout(Request $request)
     {
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login')->with('message', 'You have been logged out.');
+        return redirect('/login')->with('message', 'Admin telah logout.');
     }
 }

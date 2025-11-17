@@ -41,7 +41,7 @@ class LoginController extends Controller
                 $request->session()->put('user_name', Auth::user()->name);
                 return redirect()->intended('karyawan/dashboard')->with('message', 'Login successful!');
             }else{
-                return redirect()->back()->with('message', 'Login failed! Please check your credentials.')->withInput();
+                return redirect()->back()->with('message', 'Login gagal! Silakan cek kembali username & password.')->withInput();
             }
         }elseif ($request->input('role') == 'admin') {
             // Hardcoded admin credentials (no database)

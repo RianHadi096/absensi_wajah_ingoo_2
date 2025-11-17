@@ -24,19 +24,12 @@
     <div class="d-flex d-xl-flex align-items-center align-items-xl-center" style="width: 100%;height: 100%;">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-md-9 col-lg-12 col-xl-10">
+                <div class="col-md-10 col-lg-8 col-xl-7">
                     <div class="card shadow-lg o-hidden border-0 my-5">
                         <div class="card-body p-0">
-                            <div class="row">
-                                <div class="col-lg-6 d-none d-lg-flex">
-                                    <div class="flex-grow-1 bg-login-image">
-
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
                                         <div class="p-5">
                                             <div class="text-center">
-                                                <h4 class="text-dark mb-4">Hi there. Welcome!</h4>
+                                                <h5 class="text-dark mb-4">PT. Internet Network Global Online</h5>
                                             </div>
                                             <div class="overflow-auto">
                                                 @if (Session::has('message'))
@@ -47,28 +40,31 @@
                                                 @csrf
                                                 <!-- login dengan username/email-->
                                                 <div class="mb-3">
-                                                    <i class="fa fa-user" aria-hidden="true"></i> | Your Username or Email<input id="exampleInputEmail" class="form-control form-control-user" type="text" aria-describedby="emailHelp" placeholder="Enter your username or email" name="name_or_email" required/>
+                                                    <i class="fa fa-user" aria-hidden="true"></i> | Your Username or Email
+                                                    <input id="InputEmailorUsername" class="form-control form-control-user" type="text" aria-describedby="emailHelp" placeholder="Enter your username or email" name="name_or_email" required/>
                                                 </div>
                                                 <div class="mb-3">
-                                                    <i class="fa fa-key" aria-hidden="true"></i> | Your Password <input id="exampleInputPassword" class="form-control form-control-user" type="password" placeholder="Password" name="password" required/>
+                                                    <i class="fa fa-key" aria-hidden="true"></i> | Your Password
+                                                    <div class="position-relative">
+                                                        <input id="InputPassword" class="form-control form-control-user" type="password" placeholder="Password" name="password" required/>
+                                                        <i class="fa fa-eye position-absolute" id="togglePassword" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+                                                    </div>
                                                 </div>
                                                 <div class="mb-3">
                                                     <!-- Role -->
                                                     <i class="fa fa-user-o" aria-hidden="true"></i> | Pilih Role
-                                                    <select class="form-control" name="role" required>
+                                                    <select class="form-select form-select-md" name="role" required>
                                                         <option value="karyawan">Karyawan</option>
                                                         <option value="admin">Admin</option>
                                                     </select>
                                                 </div>
                                                 <button class="btn btn-outline-dark d-block btn-user w-100" type="submit">Login <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
                                                 <hr />
-                                                <a href="#" class="btn btn-outline-dark d-block btn-user w-100" >or Sign in with Google <i class="fa fa-google" aria-hidden="true"></i></a>
-                                                <hr />
                                             </form>
                                             <div class="text-center"><a class="small" href="forgot-password.html" >Forgot Password?</a></div>
                                         </div>
-                                </div>
-                            </div>
+                                
+                            
                         </div>
                     </div>
                 </div>
@@ -76,5 +72,19 @@
         </div>
     </div>
 </body>
-
+<script>
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordField = document.getElementById('InputPassword');
+        const toggleIcon = this;
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    });
+</script>
 </html>
