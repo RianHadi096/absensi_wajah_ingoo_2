@@ -17,7 +17,8 @@ class AbsensiKaryawanExport implements FromCollection, WithHeadings
             ->select(
                 'profile_karyawan.nama_lengkap as nama_karyawan',
                 'absensi_karyawan.tanggal_absensi',
-                'absensi_karyawan.waktu_absensi',
+                'absensi_karyawan.jam_masuk',
+                'absensi_karyawan.jam_keluar',
                 'absensi_karyawan.status_absensi',
                 'absensi_karyawan.koordinat'
             )
@@ -30,7 +31,8 @@ class AbsensiKaryawanExport implements FromCollection, WithHeadings
         return [
             'Nama Karyawan',
             'Tanggal Absensi',
-            'Waktu Absensi',
+            'Jam Masuk',
+            'Jam Keluar',
             'Status Absensi',
             'Koordinat',
         ];
