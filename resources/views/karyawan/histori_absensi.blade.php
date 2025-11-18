@@ -8,7 +8,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <!-- Camera Link-->
 
-<script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ asset('js/face-api.min.js') }}"></script>
 
 <head>
     <meta charset="UTF-8">
@@ -41,6 +42,7 @@
             display: none;
         }
         .if-table-displays-in-mobile {
+            overflow-x: auto;
             display: inline;
         }
     }
@@ -80,7 +82,11 @@
                        <i class="fa fa-bars" aria-hidden="true"></i><span class="hide-on-small"> Main Menu </span>
                     </button>
                     <div class="dropdown-menu" aria-labelledby="triggerId">
-                        <a class="dropdown-item" href="{{ route('karyawan/absensi_kamera') }}"><i class="fa fa-user-circle-o" aria-hidden="true"></i><i class="fas fa-camera-alt" aria-hidden="true"></i> Absensi Wajah </a>
+                        @if ($show_check_out)
+                            <a class="dropdown-item" href="{{ route('karyawan/absensi_kamera/check_out') }}"><i class="fa fa-user-circle-o" aria-hidden="true"></i><i class="fas fa-camera-alt" aria-hidden="true"></i> Absensi Keluar </a>
+                        @else
+                            <a class="dropdown-item" href="{{ route('karyawan/absensi_kamera/check_in') }}"><i class="fa fa-user-circle-o" aria-hidden="true"></i><i class="fas fa-camera-alt" aria-hidden="true"></i> Absensi Masuk </a>
+                        @endif
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="{{ route('karyawan/dashboard') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Kembali ke Main Menu</a>
                     </div>
@@ -94,34 +100,37 @@
                 <!-- Fetch all data karyawan -->
                 <div class="card">
                     <div class="card-body">
-                        <h1 class="text-center font-bold">Histori Absensi Karyawan ({{ session('user_id') }}.{{ session('user_name') }})</h1>
+                        <h1 class="text-center font-bold">Histori Absensi Karyawan</h1>
+                        <h6 class="text-center font-bold"> ({{ $nama_karyawan }})</h4>
                         @if (Session::has('message'))
-                        <div class="alert alert-success m-3" role="alert"><center>{{ Session::get('message') }}</center></div>
+                            <div class="alert alert-success m-3" role="alert"><center>{{ Session::get('message') }}</center></div>
                         @endif
+
                         <div class="table-responsive">
                             <div class="if-table-displays-in-mobile">
                                 <!-- Table Absensi Karyawan Mode Vertical -->
-                                 
-                                @foreach ($fetch_data_mobile as $index => $absensi)
-                                <table class="table table-bordered mt-4">
-                                    <tr>
-                                        <th>Tanggal Absensi</th>
-                                        <td class="text-center">{{ $absensi->tanggal_absensi }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Waktu Absensi</th>
-                                        <td class="text-center">{{ $absensi->waktu_absensi }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Status Absensi</th>
-                                        <td class="text-center">{{ $absensi->status_absensi}}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Koordinat (Google Maps)</th>
-                                        <td class="text-center">{{ $absensi->koodinat ?? 'N/A'}}</td>
-                                    </tr>
+                                 <table class="table table-bordered table-striped mt-3 mb-4">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal Absensi</th>
+                                            <th>Jam Masuk</th>
+                                            <th>Jam Keluar</th>
+                                            <th>Status Absensi</th>
+                                            <th>Koordinat (Google Maps)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($fetch_data_mobile as $index => $absensi_mobile)
+                                        <tr>
+                                            <td>{{ $absensi_mobile->tanggal_absensi ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_mobile->jam_masuk ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_mobile->jam_keluar ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_mobile->status_absensi ?? 'N/A'}}</td>
+                                            <td>{{ $absensi_mobile->koodinat ?? 'N/A' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
                                 </table>
-                                @endforeach
                             </div>
                             <div class="if-table-displays-in-desktop">
                                 <table class="table table-bordered table-striped mt-3">
@@ -135,13 +144,14 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($fetch_data_desktop as $index => $absensi)
+                                        @foreach ($fetch_data_desktop as $index => $absensi_desktop)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td>{{ $absensi->tanggal_absensi }}</td>
-                                            <td>{{ $absensi->waktu_absensi }}</td>
-                                            <td>{{ $absensi->status_absensi }}</td>
-                                            <td>{{ $absensi->koodinat ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_desktop->tanggal_absensi ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_desktop->jam_masuk ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_desktop->jam_keluar ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_desktop->status_absensi ?? 'N/A'}}</td>
+                                            <td>{{ $absensi_desktop->koodinat ?? 'N/A' }}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -162,5 +172,107 @@
             </div>
         </div>
     </main>
+    <script>
+        // Clock out photo capture functionality
+        let clockOutStream = null;
+        let clockOutModelsLoaded = false;
+
+        async function initializeClockOutCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    },
+                    audio: false
+                };
+
+                clockOutStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.createElement('video');
+                videoElement.srcObject = clockOutStream;
+                videoElement.autoplay = true;
+                videoElement.playsinline = true;
+                videoElement.style.display = 'none';
+                document.body.appendChild(videoElement);
+
+                await new Promise(resolve => {
+                    videoElement.onloadedmetadata = () => {
+                        videoElement.play();
+                        resolve();
+                    };
+                });
+
+                return videoElement;
+            } catch (error) {
+                console.error('Clock out camera error:', error);
+                alert('Camera access failed for clock out');
+                return null;
+            }
+        }
+
+        async function loadClockOutModels() {
+            if (clockOutModelsLoaded) return;
+
+            try {
+                const MODEL_URL = '{{ asset("weights") }}';
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                ]);
+                clockOutModelsLoaded = true;
+                console.log('Clock out models loaded');
+            } catch (error) {
+                console.error('Clock out model loading error:', error);
+            }
+        }
+
+        async function captureClockOutPhoto() {
+            const videoElement = await initializeClockOutCamera();
+            if (!videoElement) return;
+
+            await loadClockOutModels();
+
+            const canvas = document.createElement('canvas');
+            canvas.width = videoElement.videoWidth || 640;
+            canvas.height = videoElement.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+            // Detect face
+            const detection = await faceapi
+                .detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.35 }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (!detection) {
+                alert('No face detected. Please try again.');
+                return;
+            }
+
+            const imageData = canvas.toDataURL('image/jpeg', 0.9);
+            document.getElementById('clockOutPhotoInput').value = imageData;
+            document.getElementById('clockOutPreviewImg').src = imageData;
+            document.getElementById('clockOutPreview').style.display = 'block';
+
+            // Stop camera
+            if (clockOutStream) {
+                clockOutStream.getTracks().forEach(track => track.stop());
+            }
+            if (videoElement) {
+                document.body.removeChild(videoElement);
+            }
+        }
+
+        document.getElementById('captureClockOutBtn').addEventListener('click', captureClockOutPhoto);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function () {
+            if (clockOutStream) {
+                clockOutStream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
 </body>
 </html>

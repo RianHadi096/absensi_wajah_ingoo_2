@@ -97,31 +97,34 @@
                         @endif
                         <div class="table-responsive">
                             <div class="if-table-displays-in-mobile">
-                                <!-- Table Absensi Karyawan Mode Vertical -->
-                                 @foreach ($fetch_data_absensi_karyawan_mobile as $absensi_mobile)
-                                <table class="table table-bordered mt-4">
-                                    <tr>
-                                        <th>Nama Lengkap</th>
-                                        <td>{{ $absensi_mobile->nama_karyawan }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Tanggal Absensi</th>
-                                        <td>{{ $absensi_mobile->tanggal_absensi }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Waktu Absensi</th>
-                                        <td>{{ $absensi_mobile->waktu_absensi }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Status Absensi</th>
-                                        <td>{{ $absensi_mobile->status_absensi ?? 'N/A' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Koordinat (Google Maps)</th>
-                                        <td>{{ $absensi_mobile->koodinat ?? 'N/A'}}</td>
-                                    </tr>
+                                <table class="table table-bordered table-striped mt-3">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Nama Karyawan</th>
+                                            <th>Nama Karyawan</th>
+                                            <th>Tanggal Absensi</th>
+                                            <th>Jam Masuk</th>
+                                            <th>Jam Keluar</th>
+                                            <th>Status Absensi</th>
+                                            <th>Koordinat (Google Maps)</th>
+                                            <th>Foto Masuk</th>
+                                            <th>Foto Keluar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($fetch_data_absensi_karyawan_mobile as $index => $absensi_mobile)
+                                        <tr>
+                                            <td>{{ $absensi_mobile->nama_karyawan }}</td>
+                                            <td>{{ $absensi_mobile->tanggal_absensi ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_mobile->jam_masuk ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_mobile->jam_keluar ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_mobile->status_absensi ?? 'N/A'}}</td>
+                                            <td>{{ $absensi_mobile->koordinat ?? 'N/A' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
                                 </table>
-                                @endforeach
                             </div>
                             <div class="if-table-displays-in-desktop">
                                 <table class="table table-bordered table-striped mt-3">
@@ -130,20 +133,44 @@
                                             <th>No</th>
                                             <th>Nama Karyawan</th>
                                             <th>Tanggal Absensi</th>
-                                            <th>Waktu Absensi</th>
+                                            <th>Jam Masuk</th>
+                                            <th>Jam Keluar</th>
                                             <th>Status Absensi</th>
                                             <th>Koordinat (Google Maps)</th>
+                                            <th>Foto Masuk</th>
+                                            <th>Foto Keluar</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($fetch_data_absensi_karyawan_desktop as $index => $absensi_desktop)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td>{{ $absensi_desktop->nama_karyawan }}</td>
-                                            <td>{{ $absensi_desktop->tanggal_absensi }}</td>
-                                            <td>{{ $absensi_desktop->waktu_absensi }}</td>
-                                            <td>{{ $absensi_desktop->status_absensi ?? 'N/A' }}</td>
-                                            <td>{{ $absensi_desktop->koodinat ?? 'N/A'}}</td>
+                                            <td>{{ $absensi_desktop->nama_karyawan ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_desktop->tanggal_absensi ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_desktop->jam_masuk ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_desktop->jam_keluar ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_desktop->status_absensi ?? 'N/A'}}</td>
+                                            <td>{{ $absensi_desktop->koordinat ?? 'N/A' }}</td>
+                                            <td>
+                                                @if ($absensi_desktop->foto_masuk)
+                                                    <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
+                                                    <div class="d-flex justify-content-center">
+                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_desktop->foto_masuk) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
+                                                    </div>
+                                                @else
+                                                    <span>Tidak ada bukti foto saat masuk absensi</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($absensi_desktop->foto_keluar)
+                                                    <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
+                                                    <div class="d-flex justify-content-center">
+                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_desktop->foto_keluar) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
+                                                    </div>
+                                                @else
+                                                    <span>Tidak ada bukti foto saat keluar absensi</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -166,4 +193,18 @@
     </main>
 
 </body>
+
+<script>
+    document.querySelectorAll('#toggleButton').forEach(button => {
+        button.addEventListener('click', function() {
+            const fotoKaryawan = this.nextElementSibling.querySelector('#foto-karyawan');
+                if (fotoKaryawan.style.display === 'none' || fotoKaryawan.style.display === '') {
+                    fotoKaryawan.style.display = 'block';
+                } else {
+                    fotoKaryawan.style.display = 'none';
+                }
+            });
+        }
+    );
+</script>
 </html>

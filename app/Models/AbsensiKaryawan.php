@@ -12,7 +12,10 @@ class AbsensiKaryawan extends Model
     protected $fillable = [
         'id_karyawan',
         'tanggal_absensi',
-        'waktu_absensi',
+        'jam_masuk',
+        'jam_keluar',
+        'foto_masuk',
+        'foto_keluar',
         'status_absensi',
         'koordinat',
     ];
@@ -24,7 +27,8 @@ class AbsensiKaryawan extends Model
 
     protected $casts = [
         'tanggal_absensi' => 'datetime',
-        'waktu_absensi' => 'datetime',
+        'jam_masuk' => 'datetime',
+        'jam_keluar' => 'datetime',
     ];
 
     public function getTanggalAbsensiAttribute($value = null)
@@ -35,10 +39,17 @@ class AbsensiKaryawan extends Model
         }
         return Carbon::parse($val)->setTimezone('Asia/Jakarta')->format('d-m-Y');
     }
-    public function getWaktuAbsensiAttribute($value = null)
+    public function getJamMasukAttribute($value = null)
     {
-        $val = $value ?? ($this->attributes['waktu_absensi'] ?? null);
+        $val = $value ?? ($this->attributes['jam_masuk'] ?? null);
         if (empty($val)) {
+            return null;
+        }
+        return Carbon::parse($val)->setTimezone('Asia/Jakarta')->format('H:i:s');
+    }
+    public function getJamKeluarAttribute($value = null){
+        $val = $value ?? ($this->attributes['jam_keluar'] ?? null);
+        if (empty($val)){
             return null;
         }
         return Carbon::parse($val)->setTimezone('Asia/Jakarta')->format('H:i:s');

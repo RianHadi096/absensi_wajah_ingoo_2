@@ -87,7 +87,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="text-center m-2">
-                            <h1 class="text-center font-bold mb-2">Absensi Kamera</h1>
+                            <h1 class="text-center font-bold mb-2">Absensi Masuk</h1>
                             <p class="mb-2">Silakan ambil foto untuk absensi ( Pastikan kamera telah diizinkan oleh browser ).</p>
                             <div id="cameraStatus" class="alert alert-info" role="alert" style="display:none"></div>
 
@@ -103,7 +103,7 @@
                                 <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none">
                             </div>
 
-                            <form id="absensiForm" action="{{ route('karyawan/absensi_kamera/rekam') }}" method="POST">
+                            <form id="absensiForm" action="{{ route('karyawan/absensi_kamera/rekam_check_in') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="photo" id="photoInput">
                                 <div class="d-flex justify-content-center gap-2">
@@ -425,12 +425,12 @@
 
                 if (distance <= THRESHOLD) {
                     statusElement.className = 'alert alert-success';
-                    statusElement.textContent = 'Verifikasi berhasil! Wajah sesuai dengan data karyawan ✓ (distance: ' + distance.toFixed(3) + ')';
+                    statusElement.textContent = 'Verifikasi berhasil! Wajah sesuai dengan data karyawan ✓ ';
                     document.getElementById(SUBMIT_BTN_ID).disabled = false;
                     return true;
                 } else {
                     statusElement.className = 'alert alert-danger';
-                    statusElement.textContent = 'Verifikasi gagal! Wajah tidak sesuai dengan data karyawan. Silakan coba lagi. (distance: ' + distance.toFixed(3) + ')';
+                    statusElement.textContent = 'Verifikasi gagal! Wajah tidak sesuai dengan data karyawan. Silakan coba lagi.';
                     document.getElementById(SUBMIT_BTN_ID).disabled = true;
                     return false;
                 }

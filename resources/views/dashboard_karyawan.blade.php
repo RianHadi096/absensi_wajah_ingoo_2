@@ -47,7 +47,7 @@
             <div class="text-center"><h2 class="mt-5">Main Menu</h2></div>
                 <div class="d-grid gap-2 col-6 mx-auto">
                     <a class="btn btn-outline-dark m-2" href="#" role="button"><i class="fa fa-user" aria-hidden="true"></i> Profile </a>
-                    <a class="btn btn-outline-dark m-2" href="{{ route('karyawan/absensi_kamera') }}" role="button"><i class="fa fa-user-circle-o" aria-hidden="true"></i><i class="fas fa-camera-alt" aria-hidden="true"></i> Absensi Wajah </a>
+                    <a class="btn btn-outline-dark m-2" href="{{ route('karyawan/absensi_kamera/check_in') }}" role="button"><i class="fa fa-user-circle-o" aria-hidden="true"></i><i class="fas fa-camera-alt" aria-hidden="true"></i> Absensi Wajah </a>
                     <a class="btn btn-outline-dark m-2" href="{{ route('karyawan/histori_absensi') }}" role="button"><i class="fa fa-user" aria-hidden="true"></i><i class="fa fa-book" aria-hidden="true"></i> Histori Absensi</a>
                     <a class="btn btn-outline-dark m-2" href="#" role="button"><i class="fa fa-cog" aria-hidden="true"></i> Settings </a>
 

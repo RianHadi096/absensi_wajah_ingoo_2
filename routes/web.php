@@ -34,10 +34,13 @@ Route::get('karyawan/logout',[LoginController::class,'logout'])->name('karyawan/
 Route::get('admin/logout',[LogoutController::class,'admin_logout'])->name('admin/logout');
 
 //absensi kamera
-Route::get('karyawan/absensi_kamera', [AbsensiKaryawanController::class, 'absensiKamera'])->middleware('auth')->name('karyawan/absensi_kamera');
+Route::get('karyawan/absensi_kamera/check_in', [AbsensiKaryawanController::class, 'absensiMasukKamera'])->middleware('auth')->name('karyawan/absensi_kamera/check_in');
+Route::get('karyawan/absensi_kamera/check_out', [AbsensiKaryawanController::class, 'absensiKeluarKamera'])->middleware('auth')->name('karyawan/absensi_kamera/check_out');
 
 //Route::post('absensiKamera/upload', [AbsensiKaryawanController::class, 'upload'])->middleware('auth')->name('absensiKamera.upload');
-Route::post('karyawan/absensi_kamera/rekam', [AbsensiKaryawanController::class, 'testManual'])->middleware('auth')->name('karyawan/absensi_kamera/rekam');
+Route::post('karyawan/absensi_kamera/rekam_check_in', [AbsensiKaryawanController::class, 'rekamMasuk'])->middleware('auth')->name('karyawan/absensi_kamera/rekam_check_in');
+Route::post('karyawan/absensi_kamera/rekam_check_out', [AbsensiKaryawanController::class, 'rekamKeluar'])->middleware('auth')->name('karyawan/absensi_kamera/rekam_check_out');
+
 // verify face via POST (expects JSON) - protected by auth so session user is available
 Route::post('karyawan/absensi_kamera/verify', [AbsensiKaryawanController::class, 'verifyFace'])->middleware('auth')->name('karyawan/absensi_kamera/verify');
 
