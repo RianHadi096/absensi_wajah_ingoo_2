@@ -121,6 +121,26 @@
                                             <td>{{ $absensi_mobile->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->status_absensi ?? 'N/A'}}</td>
                                             <td>{{ $absensi_mobile->koordinat ?? 'N/A' }}</td>
+                                            <td>
+                                                @if ($absensi_mobile->foto_masuk)
+                                                    <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
+                                                    <div class="d-flex justify-content-center">
+                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_mobile->foto_masuk) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
+                                                    </div>
+                                                @else
+                                                    <span>Tidak ada bukti foto</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($absensi_mobile->foto_keluar)
+                                                    <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
+                                                    <div class="d-flex justify-content-center">
+                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_mobile->foto_keluar) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
+                                                    </div>
+                                                @else
+                                                    <span>Tidak ada bukti foto</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                         @endforeach
                                     </tbody>
