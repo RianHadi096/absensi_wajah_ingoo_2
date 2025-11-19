@@ -217,4 +217,103 @@ class AbsensiKaryawanController extends Controller{
         $match = $distance < 0.3; // Lower distance = better match
         return response()->json(['success' => true, 'match' => $match]);
     }
+
+    /**
+     * Fetch sorted absensi data for AJAX requests (no page refresh)
+     * Query params: sort_by (tanggal_absensi, jam_masuk, jam_keluar, status_absensi), sort_order (asc, desc)
+     */
+    public function getAbsensiAjax(Request $request){
+        $userId = session('user_id');
+        $sortBy = $request->get('sort_by', 'tanggal_absensi');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $perPage = $request->get('per_page', 5);
+
+        // Validate sort parameters to prevent SQL injection
+        $allowedSortBy = ['tanggal_absensi', 'jam_masuk', 'jam_keluar', 'status_absensi'];
+        $allowedOrder = ['asc', 'desc'];
+        if (!in_array($sortBy, $allowedSortBy)) $sortBy = 'tanggal_absensi';
+        if (!in_array($sortOrder, $allowedOrder)) $sortOrder = 'desc';
+
+        // Query and sort by raw database column (before accessor formatting)
+        $data = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
+            ->where('absensi_karyawan.id_karyawan', $userId)
+            ->select('absensi_karyawan.*', 'profile_karyawan.nama_lengkap')
+            ->orderByRaw("absensi_karyawan.$sortBy $sortOrder")  // Sort by raw DB column (bypasses accessor)
+            ->paginate($perPage);
+
+        // Format data for JSON response (now uses accessor formatting for display)
+        $rows = $data->items();
+        $formattedRows = [];
+        foreach ($rows as $index => $row) {
+            $formattedRows[] = [
+                'index' => $index + 1,
+                'tanggal_absensi' => $row->tanggal_absensi,  // Uses getTanggalAbsensiAttribute accessor
+                'jam_masuk' => $row->jam_masuk ?? 'N/A',     // Uses getJamMasukAttribute accessor
+                'jam_keluar' => $row->jam_keluar ?? 'N/A',   // Uses getJamKeluarAttribute accessor
+                'status_absensi' => $row->status_absensi,
+                'koordinat' => $row->koordinat ?? 'N/A'
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $formattedRows,
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'total_pages' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total()
+            ]
+        ]);
+    }
+
+    /**
+     * Fetch sorted absensi data for ADMIN AJAX requests (all karyawan, no page refresh)
+     * Query params: sort_by (tanggal_absensi, jam_masuk, jam_keluar, status_absensi), sort_order (asc, desc)
+     */
+    public function getAbsensiAdminAjax(Request $request){
+        $sortBy = $request->get('sort_by', 'tanggal_absensi');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $perPage = $request->get('per_page', 5);
+
+        // Validate sort parameters to prevent SQL injection
+        $allowedSortBy = ['tanggal_absensi', 'jam_masuk', 'jam_keluar', 'status_absensi'];
+        $allowedOrder = ['asc', 'desc'];
+        if (!in_array($sortBy, $allowedSortBy)) $sortBy = 'tanggal_absensi';
+        if (!in_array($sortOrder, $allowedOrder)) $sortOrder = 'desc';
+
+        // Query all absensi (for admin) and sort by raw database column
+        $data = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
+            ->select('absensi_karyawan.*', 'profile_karyawan.nama_lengkap as nama_karyawan')
+            ->orderByRaw("absensi_karyawan.$sortBy $sortOrder")
+            ->paginate($perPage);
+
+        // Format data for JSON response
+        $rows = $data->items();
+        $formattedRows = [];
+        foreach ($rows as $index => $row) {
+            $formattedRows[] = [
+                'index' => $index + 1,
+                'nama_karyawan' => $row->nama_karyawan ?? 'N/A',
+                'tanggal_absensi' => $row->tanggal_absensi,
+                'jam_masuk' => $row->jam_masuk ?? 'N/A',
+                'jam_keluar' => $row->jam_keluar ?? 'N/A',
+                'status_absensi' => $row->status_absensi,
+                'koordinat' => $row->koordinat ?? 'N/A',
+                'foto_masuk' => $row->foto_masuk ? '<img src="' . asset('storage/' . $row->foto_masuk) . '" style="max-width:50px; max-height:50px;">' : 'Tidak ada',
+                'foto_keluar' => $row->foto_keluar ? '<img src="' . asset('storage/' . $row->foto_keluar) . '" style="max-width:50px; max-height:50px;">' : 'Tidak ada'
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $formattedRows,
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'total_pages' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total()
+            ]
+        ]);
+    }
 }

@@ -59,7 +59,11 @@ Route::post('admin/updatekaryawan/proses',[KaryawanController::class,'prosesUpda
 
 //histori absensi karyawan
 Route::get('admin/histori_absensi_karyawan', [AbsensiKaryawanController::class, 'historyAbsensiMaster'])->name('histori_absensi_karyawan');
+// AJAX endpoint for sorted absensi data (admin)
+Route::get('admin/histori_absensi_karyawan/ajax', [AbsensiKaryawanController::class, 'getAbsensiAdminAjax'])->name('admin.histori_absensi_ajax');
 Route::get('karyawan/histori_absensi', [AbsensiKaryawanController::class, 'historyAbsensi'])->middleware('auth')->name('karyawan/histori_absensi');
+// AJAX endpoint for sorted absensi data (karyawan)
+Route::get('karyawan/histori_absensi/ajax', [AbsensiKaryawanController::class, 'getAbsensiAjax'])->middleware('auth')->name('karyawan/histori_absensi/ajax');
 
 //export absensi ke excel
 Route::get('admin/export',[AbsensiKaryawanController::class,'exportToExcel'])->name('admin/export');

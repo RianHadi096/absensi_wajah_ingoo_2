@@ -109,13 +109,13 @@
                         <div class="table-responsive">
                             <div class="if-table-displays-in-mobile">
                                 <!-- Table Absensi Karyawan Mode Vertical -->
-                                 <table class="table table-bordered table-striped mt-3 mb-4">
+                                 <table id="absensiMobileTable" class="table table-bordered table-striped mt-3 mb-4">
                                     <thead>
                                         <tr>
-                                            <th>Tanggal Absensi</th>
-                                            <th>Jam Masuk</th>
-                                            <th>Jam Keluar</th>
-                                            <th>Status Absensi</th>
+                                            <th data-sortable="date">Tanggal Absensi <span class="sort-indicator"></span></th>
+                                            <th data-sortable="time">Jam Masuk <span class="sort-indicator"></span></th>
+                                            <th data-sortable="time">Jam Keluar <span class="sort-indicator"></span></th>
+                                            <th data-sortable="string">Status Absensi <span class="sort-indicator"></span></th>
                                             <th>Koordinat (Google Maps)</th>
                                         </tr>
                                     </thead>
@@ -133,13 +133,14 @@
                                 </table>
                             </div>
                             <div class="if-table-displays-in-desktop">
-                                <table class="table table-bordered table-striped mt-3">
+                                <table id="absensiDesktopTable" class="table table-bordered table-striped mt-3">
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>Tanggal Absensi</th>
-                                            <th>Waktu Absensi</th>
-                                            <th>Status Absensi</th>
+                                            <th data-sortable="date">Tanggal Absensi <span class="sort-indicator"></span></th>
+                                            <th data-sortable="time">Jam Masuk <span class="sort-indicator"></span></th>
+                                            <th data-sortable="time">Jam Keluar <span class="sort-indicator"></span></th>
+                                            <th data-sortable="string">Status Absensi <span class="sort-indicator"></span></th>
                                             <th>Koordinat (Google Maps)</th>
                                         </tr>
                                     </thead>
@@ -272,6 +273,124 @@
             if (clockOutStream) {
                 clockOutStream.getTracks().forEach(track => track.stop());
             }
+        });
+
+        // ====================================================================
+        // Server-side AJAX sorting (no page refresh)
+        // - Click on headers to fetch sorted data from server via AJAX
+        // - Updates table body with new sorted rows
+        // ====================================================================
+
+        let currentSortBy = 'tanggal_absensi';
+        let currentSortOrder = 'desc';
+
+        const sortByMap = {
+            'Tanggal Absensi': 'tanggal_absensi',
+            'Jam Masuk': 'jam_masuk',
+            'Jam Keluar': 'jam_keluar',
+            'Status Absensi': 'status_absensi'
+        };
+
+        async function fetchSortedData(sortBy, sortOrder, tableType) {
+            try {
+                const url = new URL('{{ route("karyawan/histori_absensi/ajax") }}', window.location.origin);
+                url.searchParams.append('sort_by', sortBy);
+                url.searchParams.append('sort_order', sortOrder);
+                url.searchParams.append('per_page', tableType === 'mobile' ? 2 : 5);
+
+                const response = await fetch(url.toString());
+                if (!response.ok) throw new Error('Network response failed');
+                const result = await response.json();
+
+                if (result.success) {
+                    return result.data;
+                } else {
+                    console.error('Server error:', result);
+                    alert('Failed to fetch sorted data');
+                    return null;
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('Error fetching sorted data: ' + error.message);
+                return null;
+            }
+        }
+
+        function updateTableBody(tableId, data, isMobile) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const tbody = table.tBodies[0];
+            tbody.innerHTML = '';
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                if (isMobile) {
+                    tr.innerHTML = `
+                        <td>${row.tanggal_absensi || 'N/A'}</td>
+                        <td>${row.jam_masuk || 'N/A'}</td>
+                        <td>${row.jam_keluar || 'N/A'}</td>
+                        <td>${row.status_absensi || 'N/A'}</td>
+                        <td>${row.koordinat || 'N/A'}</td>
+                    `;
+                } else {
+                    tr.innerHTML = `
+                        <td>${row.index}</td>
+                        <td>${row.tanggal_absensi || 'N/A'}</td>
+                        <td>${row.jam_masuk || 'N/A'}</td>
+                        <td>${row.jam_keluar || 'N/A'}</td>
+                        <td>${row.status_absensi || 'N/A'}</td>
+                        <td>${row.koordinat || 'N/A'}</td>
+                    `;
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        function attachAjaxSorting(tableId, isMobile) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const headers = table.querySelectorAll('th[data-sortable]');
+
+            headers.forEach((th) => {
+                th.style.cursor = 'pointer';
+                let sortOrder = 'asc';
+
+                th.addEventListener('click', async () => {
+                    const headerText = th.textContent.trim().replace(/[\s▲▼]/g, '').trim();
+                    const sortBy = sortByMap[headerText];
+
+                    if (!sortBy) {
+                        console.warn('Sort column not found:', headerText);
+                        return;
+                    }
+
+                    currentSortBy = sortBy;
+                    currentSortOrder = sortOrder;
+
+                    // Update sort indicators
+                    headers.forEach(h => {
+                        const s = h.querySelector('.sort-indicator');
+                        if (s) s.textContent = '';
+                    });
+                    const indicator = th.querySelector('.sort-indicator');
+                    if (indicator) indicator.textContent = sortOrder === 'asc' ? ' ▲' : ' ▼';
+
+                    // Fetch sorted data
+                    const data = await fetchSortedData(sortBy, sortOrder, isMobile ? 'mobile' : 'desktop');
+                    if (data) {
+                        updateTableBody(tableId, data, isMobile);
+                    }
+
+                    // Toggle sort order for next click
+                    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+                });
+            });
+        }
+
+        // Attach AJAX sorting for both tables when DOM is ready
+        document.addEventListener('DOMContentLoaded', function () {
+            attachAjaxSorting('absensiMobileTable', true);
+            attachAjaxSorting('absensiDesktopTable', false);
         });
     </script>
 </body>

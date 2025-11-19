@@ -97,16 +97,15 @@
                         @endif
                         <div class="table-responsive">
                             <div class="if-table-displays-in-mobile">
-                                <table class="table table-bordered table-striped mt-3">
+                                <table id="absensiMobileTable" class="table table-bordered table-striped mt-3">
                                     <thead>
                                         <tr>
                                             <th>No</th>
                                             <th>Nama Karyawan</th>
-                                            <th>Nama Karyawan</th>
-                                            <th>Tanggal Absensi</th>
-                                            <th>Jam Masuk</th>
-                                            <th>Jam Keluar</th>
-                                            <th>Status Absensi</th>
+                                            <th data-sortable="tanggal_absensi">Tanggal Absensi <span class="sort-indicator"></span></th>
+                                            <th data-sortable="jam_masuk">Jam Masuk <span class="sort-indicator"></span></th>
+                                            <th data-sortable="jam_keluar">Jam Keluar <span class="sort-indicator"></span></th>
+                                            <th data-sortable="status_absensi">Status Absensi <span class="sort-indicator"></span></th>
                                             <th>Koordinat (Google Maps)</th>
                                             <th>Foto Masuk</th>
                                             <th>Foto Keluar</th>
@@ -115,6 +114,7 @@
                                     <tbody>
                                         @foreach ($fetch_data_absensi_karyawan_mobile as $index => $absensi_mobile)
                                         <tr>
+                                            <td>{{ $index + 1 }}</td>
                                             <td>{{ $absensi_mobile->nama_karyawan }}</td>
                                             <td>{{ $absensi_mobile->tanggal_absensi ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->jam_masuk ?? 'N/A' }}</td>
@@ -127,15 +127,15 @@
                                 </table>
                             </div>
                             <div class="if-table-displays-in-desktop">
-                                <table class="table table-bordered table-striped mt-3">
+                                <table id="absensiDesktopTable" class="table table-bordered table-striped mt-3">
                                     <thead>
                                         <tr>
                                             <th>No</th>
                                             <th>Nama Karyawan</th>
-                                            <th>Tanggal Absensi</th>
-                                            <th>Jam Masuk</th>
-                                            <th>Jam Keluar</th>
-                                            <th>Status Absensi</th>
+                                            <th data-sortable="tanggal_absensi">Tanggal Absensi <span class="sort-indicator"></span></th>
+                                            <th data-sortable="jam_masuk">Jam Masuk <span class="sort-indicator"></span></th>
+                                            <th data-sortable="jam_keluar">Jam Keluar <span class="sort-indicator"></span></th>
+                                            <th data-sortable="status_absensi">Status Absensi <span class="sort-indicator"></span></th>
                                             <th>Koordinat (Google Maps)</th>
                                             <th>Foto Masuk</th>
                                             <th>Foto Keluar</th>
@@ -206,5 +206,124 @@
             });
         }
     );
+
+    // ====================================================================
+    // Server-side AJAX sorting for admin (no page refresh)
+    // - Click on headers to fetch sorted data from server via AJAX
+    // - Updates table body with new sorted rows
+    // ====================================================================
+
+    async function fetchSortedAdminData(sortBy, sortOrder, tableType) {
+        try {
+            console.log('Fetching sorted data:', { sortBy, sortOrder, tableType });
+            const url = new URL('{{ route("admin.histori_absensi_ajax") }}', window.location.origin);
+            url.searchParams.append('sort_by', sortBy);
+            url.searchParams.append('sort_order', sortOrder);
+            url.searchParams.append('per_page', tableType === 'mobile' ? 2 : 5);
+
+            console.log('Request URL:', url.toString());
+            const response = await fetch(url.toString());
+            if (!response.ok) throw new Error('Network response failed: ' + response.status);
+            const result = await response.json();
+
+            console.log('Response:', result);
+            if (result.success) {
+                return result.data;
+            } else {
+                console.error('Server error:', result);
+                alert('Failed to fetch sorted data');
+                return null;
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            alert('Error fetching sorted data: ' + error.message);
+            return null;
+        }
+    }
+
+    function updateAdminTableBody(tableId, data, isMobile) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const tbody = table.tBodies[0];
+        tbody.innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            if (isMobile) {
+                tr.innerHTML = `
+                    <td>${row.index}</td>
+                    <td>${row.nama_karyawan || 'N/A'}</td>
+                    <td>${row.tanggal_absensi || 'N/A'}</td>
+                    <td>${row.jam_masuk || 'N/A'}</td>
+                    <td>${row.jam_keluar || 'N/A'}</td>
+                    <td>${row.status_absensi || 'N/A'}</td>
+                    <td>${row.koordinat || 'N/A'}</td>
+                    <td>${row.foto_masuk || 'Tidak ada'}</td>
+                    <td>${row.foto_keluar || 'Tidak ada'}</td>
+                `;
+            } else {
+                tr.innerHTML = `
+                    <td>${row.index}</td>
+                    <td>${row.nama_karyawan || 'N/A'}</td>
+                    <td>${row.tanggal_absensi || 'N/A'}</td>
+                    <td>${row.jam_masuk || 'N/A'}</td>
+                    <td>${row.jam_keluar || 'N/A'}</td>
+                    <td>${row.status_absensi || 'N/A'}</td>
+                    <td>${row.koordinat || 'N/A'}</td>
+                    <td>${row.foto_masuk || 'Tidak ada'}</td>
+                    <td>${row.foto_keluar || 'Tidak ada'}</td>
+                `;
+            }
+            tbody.appendChild(tr);
+        });
+    }
+
+    function attachAdminAjaxSorting(tableId, isMobile) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const headers = table.querySelectorAll('th[data-sortable]');
+
+        headers.forEach((th) => {
+            th.style.cursor = 'pointer';
+            let sortOrder = 'asc';
+
+            th.addEventListener('click', async () => {
+                // Get sortBy from data-sortable attribute, not from text content
+                const sortBy = th.getAttribute('data-sortable');
+
+                if (!sortBy) {
+                    console.warn('Sort column not found for header:', th.textContent);
+                    return;
+                }
+
+                console.log('Header clicked, sortBy:', sortBy, 'sortOrder:', sortOrder);
+
+                // Update sort indicators
+                headers.forEach(h => {
+                    const s = h.querySelector('.sort-indicator');
+                    if (s) s.textContent = '';
+                });
+                const indicator = th.querySelector('.sort-indicator');
+                if (indicator) indicator.textContent = sortOrder === 'asc' ? ' ▲' : ' ▼';
+
+                // Fetch sorted data
+                const data = await fetchSortedAdminData(sortBy, sortOrder, isMobile ? 'mobile' : 'desktop');
+                if (data) {
+                    console.log('Updating table with', data.length, 'rows');
+                    updateAdminTableBody(tableId, data, isMobile);
+                }
+
+                // Toggle sort order for next click
+                sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            });
+        });
+    }
+
+    // Attach AJAX sorting for both tables when DOM is ready
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOMContentLoaded: Attaching AJAX sorting');
+        attachAdminAjaxSorting('absensiMobileTable', true);
+        attachAdminAjaxSorting('absensiDesktopTable', false);
+    });
 </script>
 </html>
