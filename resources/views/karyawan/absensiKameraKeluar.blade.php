@@ -106,6 +106,7 @@
                             <form id="absensiForm" action="{{ route('karyawan/absensi_kamera/rekam_check_out') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="photo" id="photoInput">
+                                <input type="hidden" name="koordinat" id="koordinatInput">
                                 <div class="d-flex justify-content-center gap-2">
                                     <div class="dropdown">
                                         <button class="btn btn-outline-dark dropdown-toggle" type="button" id="cameraDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -469,6 +470,57 @@
         }
 
         // ============================================================================
+        // 6. GET USER LOCATION
+        // ============================================================================
+
+        /**
+         * Get user location using Geolocation API
+         */
+        function getUserLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation tidak didukung oleh browser ini.'));
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        userLocation = `${latitude},${longitude}`;
+                        console.log('Location obtained:', userLocation);
+                        document.getElementById('koordinatInput').value = userLocation;
+                        resolve(userLocation);
+                    },
+                    (error) => {
+                        console.error('Geolocation error:', error);
+                        let errorMessage = 'Gagal mendapatkan lokasi: ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += 'Izin lokasi ditolak. Silakan izinkan akses lokasi di pengaturan browser.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += 'Lokasi tidak tersedia.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += 'Waktu habis untuk mendapatkan lokasi.';
+                                break;
+                            default:
+                                errorMessage += 'Error tidak diketahui.';
+                                break;
+                        }
+                        reject(new Error(errorMessage));
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 300000 // 5 minutes
+                    }
+                );
+            });
+        }
+
+        // ============================================================================
         // 7. EVENT LISTENERS
         // ============================================================================
 
@@ -476,6 +528,39 @@
             // Initialize camera and load models on page load
             await initializeCamera();
             await loadFaceApiModels();
+
+            // Try to get location on page load
+            try {
+                await getUserLocation();
+                console.log('Location pre-obtained');
+            } catch (error) {
+                console.warn('Could not get location on load:', error.message);
+            }
+
+            // Pre-compute reference descriptor from stored image (if available) to speed up verification
+            if (REFERENCE_IMAGE_URL) {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.src = REFERENCE_IMAGE_URL;
+                    await new Promise((resolve) => {
+                        img.onload = resolve;
+                        img.onerror = resolve; // resolve even on error to avoid blocking
+                    });
+                    const refDetection = await faceapi
+                        .detectSingleFace(img, getTinyOptions())
+                        .withFaceLandmarks()
+                        .withFaceDescriptor();
+                    if (refDetection && refDetection.descriptor) {
+                        referenceDescriptor = refDetection.descriptor;
+                        console.log('Preloaded reference descriptor from stored image');
+                    } else {
+                        console.warn('Could not extract descriptor from reference image');
+                    }
+                } catch (e) {
+                    console.error('Error preloading reference image:', e);
+                }
+            }
 
             // Pre-compute reference descriptor from stored image (if available) to speed up verification
             if (REFERENCE_IMAGE_URL) {
@@ -527,11 +612,30 @@
             });
 
             // Form submission
-            document.getElementById(ABSENSI_FORM_ID).addEventListener('submit', function (e) {
+            document.getElementById(ABSENSI_FORM_ID).addEventListener('submit', async function (e) {
+                // Prevent default submission so we can await async geolocation
+                e.preventDefault();
+
                 if (document.getElementById(SUBMIT_BTN_ID).disabled) {
-                    e.preventDefault();
                     alert('Silakan verifikasi wajah terlebih dahulu!');
+                    return;
                 }
+
+                // Get location before submitting (if not already obtained)
+                if (!userLocation) {
+                    try {
+                        const location = await getUserLocation();
+                        console.log('Location set for submission:', location);
+                    } catch (error) {
+                        alert('Gagal mendapatkan lokasi: ' + error.message + '. Absensi tetap akan dilanjutkan tanpa lokasi.');
+                        document.getElementById('koordinatInput').value = '';
+                    }
+                } else {
+                    console.log('Using pre-obtained location for submission:', userLocation);
+                }
+
+                // Now submit the form programmatically
+                e.target.submit();
             });
 
             // Stop camera when user leaves the page

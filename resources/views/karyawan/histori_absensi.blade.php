@@ -126,7 +126,7 @@
                                             <td>{{ $absensi_mobile->jam_masuk ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->status_absensi ?? 'N/A'}}</td>
-                                            <td>{{ $absensi_mobile->koodinat ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_mobile->koordinat ?? 'N/A' }}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -152,7 +152,7 @@
                                             <td>{{ $absensi_desktop->jam_masuk ?? 'N/A' }}</td>
                                             <td>{{ $absensi_desktop->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_desktop->status_absensi ?? 'N/A'}}</td>
-                                            <td>{{ $absensi_desktop->koodinat ?? 'N/A' }}</td>
+                                            <td>{{ $absensi_desktop->koordinat ?? 'N/A' }}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -265,8 +265,6 @@
                 document.body.removeChild(videoElement);
             }
         }
-
-        document.getElementById('captureClockOutBtn').addEventListener('click', captureClockOutPhoto);
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', function () {

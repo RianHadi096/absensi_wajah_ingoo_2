@@ -120,7 +120,7 @@
                                             <td>{{ $absensi_mobile->jam_masuk ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->status_absensi ?? 'N/A'}}</td>
-                                            <td>{{ $absensi_mobile->koordinat ?? 'N/A' }}</td>
+                                            <td><a href="https://www.google.com/maps/search/?api=1&query={{ $absensi_mobile->koordinat }}" target="_blank">{{ $absensi_mobile->koordinat }}</a></td>
                                             <td>
                                                 @if ($absensi_mobile->foto_masuk)
                                                     <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
@@ -170,7 +170,7 @@
                                             <td>{{ $absensi_desktop->jam_masuk ?? 'N/A' }}</td>
                                             <td>{{ $absensi_desktop->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_desktop->status_absensi ?? 'N/A'}}</td>
-                                            <td>{{ $absensi_desktop->koordinat ?? 'N/A' }}</td>
+                                            <td><a href="https://www.google.com/maps/search/?api=1&query={{ $absensi_mobile->koordinat }}" target="_blank">{{ $absensi_mobile->koordinat }}</a></td>
                                             <td>
                                                 @if ($absensi_desktop->foto_masuk)
                                                     <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>

@@ -128,6 +128,7 @@ class AbsensiKaryawanController extends Controller{
         }
 
         //menentukan status absensi
+        $koordinat = $request->input('koordinat', '');
         if (Carbon::now()->lessThanOrEqualTo($jam_masuk_kerja)) {
             $status_absensi = 'Hadir Tepat Waktu';
             $absensi::Create([
@@ -136,7 +137,7 @@ class AbsensiKaryawanController extends Controller{
                 'jam_masuk' => $hour_only,
                 'foto_masuk' => $foto_masuk_path,
                 'status_absensi' => $status_absensi,
-                'koordinat' => '',
+                'koordinat' => $koordinat,
             ]);
         } elseif (Carbon::now()->greaterThan($jam_masuk_kerja) && Carbon::now()->lessThanOrEqualTo($jam_keluar_kerja)) {
             $status_absensi = 'Hadir Terlambat';
@@ -146,7 +147,7 @@ class AbsensiKaryawanController extends Controller{
                 'jam_masuk' => $hour_only,
                 'foto_masuk' => $foto_masuk_path,
                 'status_absensi' => $status_absensi,
-                'koordinat' => '',
+                'koordinat' => $koordinat,
             ]);
           } else {
               return redirect()->route('karyawan/histori_absensi')->with('message', 'Dear ' . $displayName . ' , jam kerjanya sudah habis.');
@@ -189,9 +190,11 @@ class AbsensiKaryawanController extends Controller{
         }
 
         // Update with clock out time
+        $koordinat = $request->input('koordinat', '');
         $absensi->update([
             'jam_keluar' => $hour_only,
             'foto_keluar' => $foto_keluar_path,
+            'koordinat' => $koordinat,
         ]);
 
         $profile = Karyawan::find($userId);
