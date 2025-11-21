@@ -70,3 +70,4 @@ Route::get('admin/export',[AbsensiKaryawanController::class,'exportToExcel'])->n
 
 //profile karyawan dengan auth id
 Route::get('karyawan/profile/{id}', [KaryawanController::class, 'profileKaryawan'])->middleware('auth')->name('karyawan.profile');
+Route::post('karyawan/change-password', [KaryawanController::class, 'changePassword'])->middleware('auth')->name('karyawan.changePassword');

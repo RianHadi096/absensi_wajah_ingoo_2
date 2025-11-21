@@ -236,6 +236,60 @@
                                     @endif
                                 </div>
                             </div>
+                            <hr>
+                            <!-- Password Change Form -->
+                            <div class="profile-field mb-3">
+                                <label class="fw-bold text-muted d-block mb-2">Ubah Password:</label>
+                                <!-- Button toggles the visibility of the password form (hidden by default) -->
+                                <button id="togglePasswordButton" class="btn btn-outline-dark btn-sm mb-2" aria-controls="passwordFormContainer" aria-expanded="false">
+                                    <i class="fa fa-key" aria-hidden="true"></i>
+                                    <span id="togglePasswordButtonText">Tampilkan Form Ubah Password</span>
+                                </button>
+
+                                <div id="passwordFormContainer" style="display: none;">
+                                    <form method="POST" action="{{ route('karyawan.changePassword') }}">
+                                        @csrf
+                                        <div class="mb-3">
+                                            <label for="current_password" class="form-label">Password Saat Ini</label>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control password-field" id="current_password" name="current_password" required>
+                                                <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="current_password" aria-pressed="false" aria-label="Tampilkan password saat ini">
+                                                    <i class="fa fa-eye" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                            @error('current_password')
+                                                <div class="text-danger">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="new_password" class="form-label">Password Baru</label>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control password-field" id="new_password" name="new_password" required>
+                                                <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="new_password" aria-pressed="false" aria-label="Tampilkan password baru">
+                                                    <i class="fa fa-eye" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                            @error('new_password')
+                                                <div class="text-danger">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="new_password_confirmation" class="form-label">Konfirmasi Password Baru</label>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control password-field" id="new_password_confirmation" name="new_password_confirmation" required>
+                                                <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="new_password_confirmation" aria-pressed="false" aria-label="Tampilkan konfirmasi password baru">
+                                                    <i class="fa fa-eye" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Ubah Password</button>
+                                        <button type="button" id="cancelPasswordForm" class="btn btn-link">Batal</button>
+                                    </form>
+                                    @if(session('success'))
+                                        <div class="alert alert-success mt-3">{{ session('success') }}</div>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -243,13 +297,16 @@
         </div>
     </main>
     <script>
-        // Toggle photo visibility
+        // Toggle photo visibility and password form visibility
         document.addEventListener('DOMContentLoaded', function() {
-            const toggleButton = document.getElementById('toggleButton');
-            if (toggleButton) {
-                toggleButton.addEventListener('click', function() {
+            // Photo toggle
+            const togglePhotoButton = document.getElementById('toggleButton');
+            if (togglePhotoButton) {
+                togglePhotoButton.addEventListener('click', function() {
                     const fotoKaryawan = document.getElementById('foto-karyawan');
-                    if (fotoKaryawan.style.display === 'none') {
+                    if (!fotoKaryawan) return;
+                    const isHidden = fotoKaryawan.style.display === 'none' || getComputedStyle(fotoKaryawan).display === 'none';
+                    if (isHidden) {
                         fotoKaryawan.style.display = 'block';
                         this.innerHTML = '<i class="fa fa-file-image-o" aria-hidden="true"></i> Hide';
                     } else {
@@ -258,6 +315,79 @@
                     }
                 });
             }
+
+            // Password form toggle
+            const togglePasswordButton = document.getElementById('togglePasswordButton');
+            const passwordContainer = document.getElementById('passwordFormContainer');
+            const togglePasswordButtonText = document.getElementById('togglePasswordButtonText');
+            const cancelPasswordForm = document.getElementById('cancelPasswordForm');
+
+            if (togglePasswordButton && passwordContainer) {
+                togglePasswordButton.addEventListener('click', function() {
+                    const isHidden = passwordContainer.style.display === 'none' || getComputedStyle(passwordContainer).display === 'none';
+                    if (isHidden) {
+                        passwordContainer.style.display = 'block';
+                        this.setAttribute('aria-expanded', 'true');
+                        if (togglePasswordButtonText) togglePasswordButtonText.textContent = 'Sembunyikan Form Ubah Password';
+                        // focus the first input for convenience
+                        const firstInput = passwordContainer.querySelector('input');
+                        if (firstInput) firstInput.focus();
+                    } else {
+                        passwordContainer.style.display = 'none';
+                        this.setAttribute('aria-expanded', 'false');
+                        if (togglePasswordButtonText) togglePasswordButtonText.textContent = 'Tampilkan Form Ubah Password';
+                        // clear sensitive fields when hiding
+                        const inputs = passwordContainer.querySelectorAll('input');
+                        inputs.forEach(i => i.value = '');
+                    }
+                });
+            }
+
+            if (cancelPasswordForm && passwordContainer && togglePasswordButton) {
+                cancelPasswordForm.addEventListener('click', function() {
+                    passwordContainer.style.display = 'none';
+                    togglePasswordButton.setAttribute('aria-expanded', 'false');
+                    if (togglePasswordButtonText) togglePasswordButtonText.textContent = 'Tampilkan Form Ubah Password';
+                    const inputs = passwordContainer.querySelectorAll('input');
+                    inputs.forEach(i => i.value = '');
+                    // reset eye icons to closed state
+                    const toggleBtns = passwordContainer.querySelectorAll('.toggle-password-btn');
+                    toggleBtns.forEach(b => {
+                        const icon = b.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fa-eye-slash');
+                            icon.classList.add('fa-eye');
+                        }
+                        b.setAttribute('aria-pressed', 'false');
+                    });
+                });
+            }
+
+            // Per-field show/hide password toggles (eye icon)
+            const perFieldToggles = document.querySelectorAll('.toggle-password-btn');
+            perFieldToggles.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+                    if (!input) return;
+                    const icon = this.querySelector('i');
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        if (icon) {
+                            icon.classList.remove('fa-eye');
+                            icon.classList.add('fa-eye-slash');
+                        }
+                        this.setAttribute('aria-pressed', 'true');
+                    } else {
+                        input.type = 'password';
+                        if (icon) {
+                            icon.classList.remove('fa-eye-slash');
+                            icon.classList.add('fa-eye');
+                        }
+                        this.setAttribute('aria-pressed', 'false');
+                    }
+                });
+            });
         });
     </script>
 </body>
