@@ -200,6 +200,7 @@
                                             <th data-sortable="time">Jam Keluar <span class="sort-indicator"></span></th>
                                             <th data-sortable="string">Status Absensi <span class="sort-indicator"></span></th>
                                             <th>Koordinat (Google Maps)</th>
+                                            <th>Posisi Absen</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -212,6 +213,11 @@
                                             <td>
                                                 <a href="#" class="koordinat-link" data-koordinat="{{ $absensi_mobile->koordinat }}">{{ $absensi_mobile->koordinat }}</a>
                                             </td>
+                                            @if($absensi_mobile->koordinat == '-7.0381802,107.7100255')
+                                                <td><span class="badge bg-primary">Di Kantor</span></td>
+                                            @else
+                                                <td><span class="badge bg-danger">Di Luar Kantor</span></td>
+                                            @endif
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -227,6 +233,7 @@
                                             <th data-sortable="time">Jam Keluar <span class="sort-indicator"></span></th>
                                             <th data-sortable="string">Status Absensi <span class="sort-indicator"></span></th>
                                             <th>Koordinat (Google Maps)</th>
+                                            <th>Posisi Absen</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -240,6 +247,11 @@
                                             <td>
                                                 <a href="#" class="koordinat-link" data-koordinat="{{ $absensi_desktop->koordinat }}">{{ $absensi_desktop->koordinat }}</a>
                                             </td>
+                                             @if($absensi_mobile->koordinat == '-7.0381802,107.7100255')
+                                                <td><span class="badge bg-primary">Di Kantor</span></td>
+                                            @else
+                                                <td><span class="badge bg-danger">Di Luar Kantor</span></td>
+                                            @endif
                                         </tr>
                                         @endforeach
                                     </tbody>

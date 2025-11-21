@@ -189,6 +189,7 @@
                                             <th data-sortable="jam_keluar">Jam Keluar <span class="sort-indicator"></span></th>
                                             <th data-sortable="status_absensi">Status Absensi <span class="sort-indicator"></span></th>
                                             <th>Koordinat (Google Maps)</th>
+                                            <th>Posisi Absensi</th>
                                             <th>Foto Masuk</th>
                                             <th>Foto Keluar</th>
                                         </tr>
@@ -202,6 +203,11 @@
                                             <td>{{ $absensi_mobile->jam_masuk ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->status_absensi ?? 'N/A'}}</td>
+                                            @if($absensi_mobile->koordinat == '-7.0381802,107.7100255')
+                                                <td><span class="badge bg-primary">Di Kantor</span></td>
+                                            @else
+                                                <td><span class="badge bg-danger">Di Luar Kantor</span></td>
+                                            @endif
                                             <td><a href="#" class="koordinat-link" data-koordinat="{{ $absensi_mobile->koordinat }}">{{ $absensi_mobile->koordinat }}</a></td>
                                             <td>
                                                 @if ($absensi_mobile->foto_masuk)
@@ -239,6 +245,7 @@
                                             <th data-sortable="jam_keluar">Jam Keluar <span class="sort-indicator"></span></th>
                                             <th data-sortable="status_absensi">Status Absensi <span class="sort-indicator"></span></th>
                                             <th>Koordinat (Google Maps)</th>
+                                            <th>Posisi Absensi</th>
                                             <th>Foto Masuk</th>
                                             <th>Foto Keluar</th>
                                         </tr>
@@ -253,6 +260,11 @@
                                             <td>{{ $absensi_desktop->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_desktop->status_absensi ?? 'N/A'}}</td>
                                             <td><a href="#" class="koordinat-link" data-koordinat="{{ $absensi_desktop->koordinat }}">{{ $absensi_desktop->koordinat }}</a></td>
+                                            @if($absensi_mobile->koordinat == '-7.0381802,107.7100255')
+                                                <td><span class="badge bg-primary">Di Kantor</span></td>
+                                            @else
+                                                <td><span class="badge bg-danger">Di Luar Kantor</span></td>
+                                            @endif
                                             <td>
                                                 @if ($absensi_desktop->foto_masuk)
                                                     <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
