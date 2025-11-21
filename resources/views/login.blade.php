@@ -13,10 +13,48 @@
 </head>
 
 <style>
+    /*untuk layout mode desktop*/
     .bg-login-image{
         background-image: url('https://images.unsplash.com/photo-1527689368864-3a821dbccc34?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
         background-position: center;
         background-size: cover;
+    }
+    .logo {
+        width: 30%;
+        height: auto;
+    }
+    /*untuk layout mode mobile font and logo harus fit*/
+    @media (max-width: 576px) {
+        .logo {
+            width: 65%;
+            height: auto;
+            padding-right: 15px;
+        }
+        span{
+            font-size: 14px;
+        }
+        /* make input placeholders match mobile layout font-size */
+        .form-control::placeholder,
+        input::placeholder {
+            font-size: 14px;
+            opacity: 1; /* ensure visibility on some browsers */
+        }
+        /* make select and option text match mobile layout font-size */
+        .form-select,
+        .form-select option,
+        select.form-select,
+        select.form-select option {
+            font-size: 14px;
+        }
+        /* Smaller input sizing for compact forms */
+        .small-input {
+            font-size: 0.85rem;
+            line-height: 1.25;
+        }
+        .small-input::placeholder {
+            font-size: 0.85rem;
+            opacity: 1;
+        }
     }
 </style>
 
@@ -27,10 +65,11 @@
                 <div class="col-md-10 col-lg-8 col-xl-7">
                     <div class="card shadow-lg o-hidden border-0 my-5">
                         <div class="card-body p-0">
-                                        <div class="p-5">
+                                        <div class="p-4">
+                                            <!-- logo perusahaan di folder public/logo -->
                                             <div class="text-center">
-                                                <h5 class="text-dark mb-4">PT. Internet Network Global Online</h5>
-                                            </div>
+                                                <img class="logo" src="{{ asset('logo/logo_ingoo.png') }}" alt="Company Logo">
+                                            </div>  
                                             <div class="overflow-auto">
                                                 @if (Session::has('message'))
                                                 <div class="alert alert-warning" role="alert"><center>{{ Session::get('message') }}</center></div>
@@ -40,20 +79,20 @@
                                                 @csrf
                                                 <!-- login dengan username/email-->
                                                 <div class="mb-3">
-                                                    <i class="fa fa-user" aria-hidden="true"></i> | Your Username or Email
-                                                    <input id="InputEmailorUsername" class="form-control form-control-user" type="text" aria-describedby="emailHelp" placeholder="Enter your username or email" name="name_or_email" required/>
+                                                    <i class="fa fa-user" aria-hidden="true"></i><span>| Username anda/ Email anda</span>
+                                                    <input id="InputEmailorUsername" class="form-control form-control-user small-input" type="text" aria-describedby="emailHelp" placeholder="Masukkan username atau email anda" name="name_or_email" required/>
                                                 </div>
                                                 <div class="mb-3">
-                                                    <i class="fa fa-key" aria-hidden="true"></i> | Your Password
+                                                    <i class="fa fa-key" aria-hidden="true"></i><span>| Password anda</span>
                                                     <div class="position-relative">
-                                                        <input id="InputPassword" class="form-control form-control-user" type="password" placeholder="Password" name="password" required/>
+                                                        <input id="InputPassword" class="form-control form-control-user small-input" type="password" placeholder="Masukkan password anda" name="password" required/>
                                                         <i class="fa fa-eye position-absolute" id="togglePassword" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
                                                     </div>
                                                 </div>
                                                 <div class="mb-3">
                                                     <!-- Role -->
-                                                    <i class="fa fa-user-o" aria-hidden="true"></i> | Pilih Role
-                                                    <select class="form-select form-select-md" name="role" required>
+                                                    <i class="fa fa-user-o" aria-hidden="true"></i><span>| Pilih Role</span>
+                                                    <select class="form-select form-select-md small-input" name="role" required>
                                                         <option value="karyawan">Karyawan</option>
                                                         <option value="admin">Admin</option>
                                                     </select>

@@ -13,7 +13,7 @@ class KaryawanController extends Controller
 {
     public function index(){
         //get all data karyawan
-        $fetch_karyawan_mobile = Karyawan::paginate(1);
+        $fetch_karyawan_mobile = Karyawan::paginate(2);
         $fetch_karyawan_desktop = Karyawan::paginate(2);
         $karyawans = Karyawan::all();
         //rekam dengan json encode

@@ -33,17 +33,7 @@
     .if-table-displays-in-mobile {
         display: none;
     }
-    @media (max-width: 500px) {
-        .hide-on-small {
-            display: none;
-        }
-        .if-table-displays-in-desktop {
-            display: none;
-        }
-        .if-table-displays-in-mobile {
-            display: inline;
-        }
-    }
+    
     /* Override Bootstrap 5 pagination text color to black */
     .page-link {
         color: #000 !important;  /* Black text for links */
@@ -58,28 +48,120 @@
         border-color: #000;
         color: #fff !important;  /* White text on active for contrast */
     }
+    .desktop-mode{
+        display: inline;
+    }
+    .mobile-mode{
+        display: none;
+    }
+
+    @media (max-width: 500px) {
+        /* Reduce font sizes for mobile devices */
+        body, nav, main, footer, h1, h2, h3, h4, h5, h6, p, a, div, td, th, span, button {
+            font-size: 11px !important;
+        }
+        h1 {
+            font-size: 16px !important;
+        }
+        h2 {
+            font-size: 14px !important;
+        }
+        .btn {
+            padding: 0.3rem 0.5rem !important;
+            font-size: 10px !important;
+        }
+        table {
+            font-size: 10px !important;
+        }
+        .hide-on-small {
+            display: none;
+        }
+        .if-table-displays-in-desktop {
+            display: none;
+        }
+        .if-table-displays-in-mobile {
+            display: inline;
+        }
+        .logo-layout{
+            padding-left: 70px;
+        }
+        .desktop-mode{
+            display: none;
+        }
+        .mobile-mode{
+            display: inline;
+        }
+    }
 </style>
 
 <body>
     <nav>
-        <div class="container-fluid bg-light">
-            <div class="d-flex flex-row-reverse p-2">
-                <a class="btn btn-outline-dark ml-2" href="{{ route('admin/logout') }}" role="button"><i class="fas fa-sign-out-alt"></i><span class="hide-on-small"> Logout</span></a>
-                <div class="dropdown">
-                    <button
-                        class="btn btn-outline-dark dropdown-toggle"
-                        type="button"
-                        id="triggerId"
-                        data-bs-toggle="dropdown"
-                        aria-haspopup="true"
-                        aria-expanded="false"
-                    >
-                       <i class="fa fa-bars" aria-hidden="true"></i><span class="hide-on-small"> Main Menu </span>
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="triggerId">
-                        <a class="dropdown-item" href="{{ route('admin/export') }}"><i class="fa fa-pencil" aria-hidden="true"></i><i class="fas fa-file-excel"></i> Export Ke Excel</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{{ route('admin/dashboard') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Kembali ke Main Menu</a>
+        <div class="desktop-mode">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+
+                    <!--logo Perusahaan -->
+                    <div class="flex-fill">
+                        <img src="{{ asset('logo/logo_ingoo.png') }}" alt="INGOO" style="height:70px;" class="img-fluid">
+                    </div>
+
+                    <!-- Center spacer to allow center alignment -->
+                    <div class="flex-fill"></div>
+
+                    <!-- Logout button on the right -->
+                    <div class="d-flex flex-row-reverse">
+                        <a class="btn btn-outline-dark ml-2" href="{{ route('admin/logout') }}" role="button"><i class="fas fa-sign-out-alt"></i><span class="hide-on-small"> Logout</span></a>
+                        <div class="dropdown">
+                            <button
+                                class="btn btn-outline-dark dropdown-toggle"
+                                type="button"
+                                id="triggerId"
+                                data-bs-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                            >
+                            <i class="fa fa-bars" aria-hidden="true"></i><span class="hide-on-small"> Main Menu </span>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="triggerId">
+                                <a class="dropdown-item" href="{{ route('admin/export') }}"><i class="fa fa-pencil" aria-hidden="true"></i><i class="fas fa-file-excel"></i> Export Ke Excel</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ route('admin/dashboard') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Kembali ke Main Menu</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mobile-mode">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+                    <div class="flex-fill"></div>
+
+                    <!--logo Perusahaan -->
+                    <div class="logo-layout">
+                        <img src="{{ asset('logo/logo_ingoo.png') }}" alt="INGOO" style="weight:auto; height:70px;" class="img-fluid mx-auto">
+                    </div>
+
+                    <!-- Logout button on the right -->
+                    <div class="flex-fill d-flex flex-row-reverse">
+                        <a class="btn btn-outline-dark ml-2" href="{{ route('admin/logout') }}" role="button"><i class="fas fa-sign-out-alt"></i><span class="hide-on-small"> Logout</span></a>
+                        <div class="dropdown">
+                            <button
+                                class="btn btn-outline-dark dropdown-toggle"
+                                type="button"
+                                id="triggerId"
+                                data-bs-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                            >
+                            <i class="fa fa-bars" aria-hidden="true"></i><span class="hide-on-small"> Main Menu </span>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="triggerId">
+                                <a class="dropdown-item" href="{{ route('admin/export') }}"><i class="fa fa-pencil" aria-hidden="true"></i><i class="fas fa-file-excel"></i> Export Ke Excel</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ route('admin/dashboard') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Kembali ke Main Menu</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -120,7 +202,7 @@
                                             <td>{{ $absensi_mobile->jam_masuk ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->status_absensi ?? 'N/A'}}</td>
-                                            <td><a href="https://www.google.com/maps/search/?api=1&query={{ $absensi_mobile->koordinat }}" target="_blank">{{ $absensi_mobile->koordinat }}</a></td>
+                                            <td><a href="#" class="koordinat-link" data-koordinat="{{ $absensi_mobile->koordinat }}">{{ $absensi_mobile->koordinat }}</a></td>
                                             <td>
                                                 @if ($absensi_mobile->foto_masuk)
                                                     <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
@@ -170,7 +252,7 @@
                                             <td>{{ $absensi_desktop->jam_masuk ?? 'N/A' }}</td>
                                             <td>{{ $absensi_desktop->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_desktop->status_absensi ?? 'N/A'}}</td>
-                                            <td><a href="https://www.google.com/maps/search/?api=1&query={{ $absensi_mobile->koordinat }}" target="_blank">{{ $absensi_mobile->koordinat }}</a></td>
+                                            <td><a href="#" class="koordinat-link" data-koordinat="{{ $absensi_desktop->koordinat }}">{{ $absensi_desktop->koordinat }}</a></td>
                                             <td>
                                                 @if ($absensi_desktop->foto_masuk)
                                                     <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
@@ -212,6 +294,24 @@
         </div>
     </main>
 
+
+        <!-- Google Maps Modal -->
+        <div class="modal fade" id="koordinatModal" tabindex="-1" aria-labelledby="koordinatModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="koordinatModalLabel">Lokasi Absensi (Google Maps)</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="koordinatMapContainer" style="width:100%;height:400px;">
+                            <iframe id="koordinatMapIframe" src="" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 </body>
 
 <script>
@@ -226,6 +326,22 @@
             });
         }
     );
+
+    // Modal for Koordinat Google Maps
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.koordinat-link').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var koordinat = this.getAttribute('data-koordinat');
+                if (koordinat && koordinat !== 'N/A') {
+                    var mapUrl = 'https://www.google.com/maps?q=' + encodeURIComponent(koordinat) + '&output=embed';
+                    document.getElementById('koordinatMapIframe').src = mapUrl;
+                    var modal = new bootstrap.Modal(document.getElementById('koordinatModal'));
+                    modal.show();
+                }
+            });
+        });
+    });
 
     // ====================================================================
     // Server-side AJAX sorting for admin (no page refresh)

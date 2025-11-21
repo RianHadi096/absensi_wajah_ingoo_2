@@ -1,0 +1,4 @@
+- [ ] Update absensiKameraMasuk.blade.php: Change the first empty div to <div class="flex-fill"></div>
+- [ ] Update absensiKameraKeluar.blade.php: Change the first empty div to <div class="flex-fill"></div>
+- [ ] Update dashboard_karyawan.blade.php: Remove padding-left: 25px; from .logo-layout in mobile media query
+- [ ] Update histori_absensi.blade.php: Remove padding-left: 25px; from .logo-layout in mobile media query

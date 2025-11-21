@@ -14,33 +14,155 @@
 </head>
 
 <style>
-    .endpage{
-        position: absolute;
-        bottom: 0;
+    html, body {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    nav {
+        background-color: #ffffff;
+    }
+    main{
+        padding: 2px;
+        flex: 1;
+    } 
+    footer {
+        background-color: #ffffff;
         width: 100%;
-        height: 60px; /* Height of the footer */
-        background-color: #f5f5f5;
+        height: 40px;
+        margin-top: auto;
+    }
+    /* Footer responsive variants */
+    .desktop-footer {
+        display: inline;
+    }
+    .mobile-footer {
+        display: none;
+    }
+    .version-footer {
+        display: inline;
     }
     .hide-on-small {
         display: inline;
     }
     .if-table-displays-in-mobile {
-            display: none;
-        }
+        display: none;
+    }
+    /* Menu button styling - icon above, text below */
+    .menu-btn {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        min-height: 60px;
+        padding: 0.5rem !important;
+    }
+    .menu-btn i {
+        font-size: 18px;
+    }
+    .menu-btn span {
+        display: block;
+        font-size: 12px;
+    }
+    /* 2-column grid layout for menu */
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 1.5em;
+    }
+    .desktop-mode{
+        display: inline;
+    }
+    .mobile-mode{
+        display: none;
+    }
     @media (max-width: 500px) {
+        /* font size from all body gets smaller, except menu buttons */
+        body,nav,main,footer,h1,h2,h3,h4,h5,h6,p,a,div {
+            font-size: 100% !important;
+        }
+        span {
+            font-size: 12px !important;
+        }
+        /* Keep menu button text size unchanged */
+        .menu-btn{
+            font-size: 12px !important;
+        }
+        .btn {
+            padding: 0.2rem 0.5rem !important;
+            font-size: 14px !important;
+        }
         .hide-on-small {
             display: none;
         }
         .if-table-displays-in-desktop {
             display: none;
         }
+        /* On small screens hide the long desktop copyright and version
+           and show a compact mobile footer line */
+        .desktop-footer {
+            display: none !important;
+        }
+        .mobile-footer {
+            display: inline !important;
+        }
+        .version-footer {
+            display: none !important;
+        }
+        /* ensure footer works properly on small screens */
+        footer {
+            height: auto;
+        }
+        .desktop-mode{
+            display: none;
+        }
+        .mobile-mode{
+            display: inline;
+        }
+        .logo-layout{
+            padding-left: 25px;
+        }
     }
 </style>
 <body>
     <nav>
-        <div class="container-fluid bg-light">
-            <div class="d-flex flex-row-reverse p-2">
-                <a class="btn btn-outline-dark" href="{{ route('admin/logout') }}" role="button"><span class="hide-on-small">Log out </span><i class="fa fa-sign-out" aria-hidden="true"></i></a>
+        <div class="desktop-mode">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+
+                    <!--logo Perusahaan -->
+                    <div class="logo-layout">
+                        <img src="{{ asset('logo/logo_ingoo.png') }}" alt="INGOO" style="weight:auto; height:70px;" class="img-fluid mx-auto">
+                    </div>
+
+                    <div class="flex-fill"></div>
+
+                    <!-- Logout button on the right -->
+                    <div class="d-flex justify-content-end">
+                        <a class="btn btn-outline-dark" href="{{ route('admin/logout') }}" role="button"><span class="hide-on-small">Log out </span><i class="fa fa-sign-out" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mobile-mode">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+                    <div class="flex-fill"></div>
+
+                    <!--logo Perusahaan -->
+                    <div class="text-center logo-layout">
+                        <img src="{{ asset('logo/logo_ingoo.png') }}" alt="INGOO" style="weight:auto; height:70px;" class="img-fluid mx-auto">
+                    </div>
+
+                    <!-- Logout button on the right -->
+                    <div class="flex-fill d-flex justify-content-end">
+                        <a class="btn btn-outline-dark" href="{{ route('admin/logout') }}" role="button"><span class="hide-on-small">Log out </span><i class="fa fa-sign-out" aria-hidden="true"></i></a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -65,9 +187,15 @@
             </div>
         </div>
     </main>
-    <footer class="endpage">
-        <div class="d-flex justify-content-center align-items-center h-100">
-            <span class="text-muted">© 2025 Rian Hadi</span>
+    <footer>
+        <div class="container-fluid">
+            <div class="d-flex justify-content-around p-2">
+                <!-- Desktop: full copyright -->
+                <span class="text-center desktop-footer">&copy; 2025 Rian Hadi & PT.Internet Network Global Online. All rights reserved</span>
+                <!-- Mobile: compact single-line copyright + version (shown at <=500px) -->
+                <span class="text-center mobile-footer">&copy; 2025 Rian Hadi & INGOO | v 1.0.0 alpha 0.1</span>
+                <span class="text-center version-footer">Version 1.0.0 Alpha 0.1</span>
+            </div>
         </div>
     </footer>
 </body>

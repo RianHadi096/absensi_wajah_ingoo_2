@@ -48,37 +48,113 @@
         border: 1px solid #ccc;
         display: none;
     }
+    .desktop-mode{
+        display: inline;
+    }
+    .mobile-mode{
+        display: none;
+    }
     @media (max-width: 500px) {
+        /* Reduce font sizes for mobile devices */
+        body, nav, main, footer, h1, h2, h3, h4, h5, h6, p, a, div, td, th, span, button {
+            font-size: 11px !important;
+        }
+        h1 {
+            font-size: 16px !important;
+        }
+        h2 {
+            font-size: 14px !important;
+        }
+        h6 {
+            font-size: 12px !important;
+        }
+        .btn {
+            padding: 0.3rem 0.5rem !important;
+            font-size: 10px !important;
+        }
         .hide-on-small {
             display: none;
         }
         .camera-container {
             width: 90%;
         }
+        .desktop-mode{
+            display: none;
+        }
+        .mobile-mode{
+            display: inline;
+        }
+        .logo-layout{
+            padding-left: 80px;
+        }
     }
 </style>
 
 <body>
     <nav>
-        <div class="container-fluid bg-light">
-            <div class="d-flex flex-row-reverse p-2">
-               <a class="btn btn-outline-dark ml-2" href="{{ route('karyawan/logout') }}" role="button"><i class="fas fa-sign-out-alt"></i><span class="hide-on-small"> Logout</span></a>
-                <div class="dropdown">
-                    <button
-                        class="btn btn-outline-dark dropdown-toggle"
-                        type="button"
-                        id="triggerId"
-                        data-bs-toggle="dropdown"
-                        aria-haspopup="true"
-                        aria-expanded="false"
-                    >
-                       <i class="fa fa-bars" aria-hidden="true"></i><span class="hide-on-small"> Main Menu </span>
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="triggerId">
-                        <a class="dropdown-item" href="{{ route('karyawan/dashboard') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Kembali ke Main Menu</a>
+        <div class="desktop-mode">
+            <!-- Desktop Mode -->
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+
+                    <!--logo Perusahaan -->
+                    <div class="">
+                        <img src="{{ asset('logo/logo_ingoo.png') }}" alt="INGOO" style="weight:auto; height:70px;" class="img-fluid mx-auto">
+                    </div>
+
+                    <div class="flex-fill"></div>
+
+                    <!-- Menu button on the right -->
+                    <div class="flex-fill d-flex flex-row-reverse"">
+                        <a class="btn btn-outline-dark ml-2" href="{{ route('karyawan/logout') }}" role="button"><i class="fas fa-sign-out-alt"></i><span class="hide-on-small"> Logout</span></a>
+                        <div class="dropdown">
+                            <button
+                                class="btn btn-outline-dark dropdown-toggle"
+                                type="button"
+                                id="triggerId"
+                                data-bs-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                            >
+                            <i class="fa fa-bars" aria-hidden="true"></i><span class="hide-on-small"> Main Menu </span>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="triggerId">
+                                <a class="dropdown-item" href="{{ route('karyawan/dashboard') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Kembali ke Main Menu</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="mobile-mode">
+            <!-- Mobile Mode -->
+            <div class="d-flex align-items-center">
+                <div class="flex-fill"></div>
+                    <!--logo Perusahaan -->
+                    <div class="logo-layout">
+                        <img src="{{ asset('logo/logo_ingoo.png') }}" alt="INGOO" style="weight:auto; height:70px;" class="img-fluid mx-auto">
+                    </div>
+
+                    <!-- Menu button on the right -->
+                    <div class="flex-fill d-flex flex-row-reverse pr-4">
+                        <a class="btn btn-outline-dark ml-2" href="{{ route('karyawan/logout') }}" role="button"><i class="fas fa-sign-out-alt"></i><span class="hide-on-small"> Logout</span></a>
+                        <div class="dropdown">
+                            <button
+                                class="btn btn-outline-dark dropdown-toggle"
+                                type="button"
+                                id="triggerId"
+                                data-bs-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                            >
+                            <i class="fa fa-bars" aria-hidden="true"></i><span class="hide-on-small"> Main Menu </span>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="triggerId">
+                                <a class="dropdown-item" href="{{ route('karyawan/dashboard') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Kembali ke Main Menu</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
         </div>
     </nav>
     <main>
