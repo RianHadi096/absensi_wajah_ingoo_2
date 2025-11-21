@@ -67,3 +67,6 @@ Route::get('karyawan/histori_absensi/ajax', [AbsensiKaryawanController::class, '
 
 //export absensi ke excel
 Route::get('admin/export',[AbsensiKaryawanController::class,'exportToExcel'])->name('admin/export');
+
+//profile karyawan dengan auth id
+Route::get('karyawan/profile/{id}', [KaryawanController::class, 'profileKaryawan'])->middleware('auth')->name('karyawan.profile');

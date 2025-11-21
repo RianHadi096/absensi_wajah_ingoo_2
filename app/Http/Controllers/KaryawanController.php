@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Karyawan;
 use App\Models\RegisterUser;
 
@@ -21,6 +22,19 @@ class KaryawanController extends Controller
         return view('admin.user_management', compact('karyawans','fetch_karyawan_mobile','fetch_karyawan_desktop', 'karyawansJson'));
 
     }
+    
+    public function profileKaryawan($id){
+        //join tabel karyawan dengan tabel users berdasarkan id_karyawan
+        $karyawan = Karyawan::find($id);
+        $user = RegisterUser::where('id', $id)->first();
+        //tanggal lahir format Indonesia dan tidak beserta jam
+        $tanggal_lahir = date('d-m-Y', strtotime($karyawan->tanggal_lahir));
+        $tanggal_masuk_kerja = date('d-m-Y', strtotime($karyawan->tanggal_masuk_kerja));
+        $username = $user ? $user->name : null;
+        $email = $user ? $user->email : null;
+        return view('karyawan.profile_karyawan', compact('karyawan','username','email','tanggal_lahir','tanggal_masuk_kerja'));
+    }
+
     public function prosesTambahKaryawan(Request $request){
         //validasi data karyawan
         $request->validate([

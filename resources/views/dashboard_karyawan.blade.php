@@ -174,7 +174,7 @@
         <div class="container">
             <div class="text-center"><h2 class="mt-5">Main Menu</h2></div>
                 <div class="menu-grid">
-                    <a class="btn btn-outline-dark menu-btn" href="#" role="button">
+                    <a class="btn btn-outline-dark menu-btn" href="{{ route('karyawan.profile', Auth::user()->id) }}" role="button">
                         <i class="fa fa-user" aria-hidden="true"></i>
                         <span class="text-center">Profile</span>
                     </a>
