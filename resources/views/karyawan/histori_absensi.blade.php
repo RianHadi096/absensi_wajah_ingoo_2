@@ -12,6 +12,8 @@
     <script src="{{ asset('js/face-api.min.js') }}"></script>
 
 <head>
+    <!-- Add logo page-->
+    <link rel="icon" type="image/png" href="{{ asset('logo/logo_ingoo_page.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INGOO || Histori Absensi ({{ session('user_name') }})</title>

@@ -15,15 +15,131 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiKaryawanController extends Controller{
     
-    public function historyAbsensiMaster(){
+public function historyAbsensiMaster(Request $request){
         //ambil semua data histori absensi untuk semua karyawan
-        $fetch_data_absensi_karyawan_desktop = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
-                                                ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap as nama_karyawan')
-                                                ->paginate(5);
-        $fetch_data_absensi_karyawan_mobile = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
-                                                ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap as nama_karyawan')
-                                                ->paginate(2);
-        return view('admin.histori_absensi_karyawan',compact('fetch_data_absensi_karyawan_desktop','fetch_data_absensi_karyawan_mobile'));
+        $filter_type = $request->get('filter_type', null); // 'week' or 'month'
+        $filter_value = $request->get('filter_value', null); // e.g. '2023-05' for month or '2023-W20' for week
+        $query = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
+                ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap as nama_karyawan')
+                ->orderBy('tanggal_absensi','desc');
+
+        // Apply filters using reliable date ranges to avoid WEEKOFYEAR/year edge cases
+        if ($filter_type && $filter_value) {
+            try {
+                if ($filter_type === 'month') {
+                    // Expecting format YYYY-MM from <input type="month">
+                    $start = Carbon::createFromFormat('Y-m', $filter_value)->startOfMonth();
+                    $end = (clone $start)->endOfMonth();
+                    $query->whereBetween('tanggal_absensi', [$start->toDateString(), $end->toDateString()]);
+                } else if ($filter_type === 'week') {
+                    // Expecting format like YYYY-Www from <input type="week"> (e.g. 2025-W49)
+                    if (preg_match('/^(\d{4})-W?(\d{1,2})$/', $filter_value, $m)) {
+                        $year = (int)$m[1];
+                        $week = (int)$m[2];
+                        // setISODate: sets date to first day (Monday) of ISO week
+                        $monday = Carbon::now()->setISODate($year, $week)->startOfWeek();
+                        $sunday = (clone $monday)->endOfWeek();
+                        $query->whereBetween('tanggal_absensi', [$monday->toDateString(), $sunday->toDateString()]);
+                    }
+                }
+            } catch (\Exception $e) {
+                // If parsing fails, silently ignore filter to avoid breaking the page
+            }
+        }
+
+        // Clone query builder before paginating so each paginator uses a fresh query
+        $queryDesktop = (clone $query);
+        $queryMobile = (clone $query);
+
+        $fetch_data_absensi_karyawan_desktop = $queryDesktop->paginate(5);
+        $fetch_data_absensi_karyawan_mobile = $queryMobile->paginate(2);
+
+        // Append query parameters for pagination links
+        $fetch_data_absensi_karyawan_desktop->appends($request->all());
+        $fetch_data_absensi_karyawan_mobile->appends($request->all());
+
+    // If filtering by month/week and no results, try to fetch the next period's data.
+    $used_next_month = false;
+    $requested_filter_value = $filter_value;
+    $shown_filter_value = $filter_value;
+    $no_data_next_month = false;
+
+    $used_next_week = false;
+    $requested_filter_value_week = $filter_value;
+    $shown_filter_value_week = $filter_value;
+    $no_data_next_week = false;
+
+    if ($filter_type === 'month' && $filter_value && $fetch_data_absensi_karyawan_desktop->total() == 0) {
+            try {
+                $requestedStart = Carbon::createFromFormat('Y-m', $filter_value)->startOfMonth();
+                $nextStart = (clone $requestedStart)->addMonth()->startOfMonth();
+                $nextEnd = (clone $nextStart)->endOfMonth();
+
+                $nextQuery = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
+                    ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap as nama_karyawan')
+                    ->whereBetween('tanggal_absensi', [$nextStart->toDateString(), $nextEnd->toDateString()])
+                    ->orderBy('tanggal_absensi','desc');
+
+                $nextDesktop = (clone $nextQuery)->paginate(5);
+                $nextMobile = (clone $nextQuery)->paginate(2);
+
+                if ($nextDesktop->total() > 0) {
+                    // Use next month's data for display and mark that we used next month
+                    $fetch_data_absensi_karyawan_desktop = $nextDesktop;
+                    $fetch_data_absensi_karyawan_mobile = $nextMobile;
+                    $used_next_month = true;
+                    $shown_filter_value = $nextStart->format('Y-m');
+
+                    // Append query params for the new pagination (we want pagination to include the shown month)
+                    $fetch_data_absensi_karyawan_desktop->appends(['filter_type' => 'month', 'filter_value' => $shown_filter_value]);
+                    $fetch_data_absensi_karyawan_mobile->appends(['filter_type' => 'month', 'filter_value' => $shown_filter_value]);
+                } else {
+                    // No data in the next month either
+                    $no_data_next_month = true;
+                }
+            } catch (\Exception $e) {
+                // ignore parsing errors and leave original empty result
+            }
+        }
+
+        // Weekly fallback: if week filter used but empty, try next ISO week
+        if ($filter_type === 'week' && $filter_value && $fetch_data_absensi_karyawan_desktop->total() == 0) {
+            try {
+                if (preg_match('/^(\d{4})-W?(\d{1,2})$/', $filter_value, $m)) {
+                    $year = (int)$m[1];
+                    $week = (int)$m[2];
+                    // get start (Monday) of requested ISO week
+                    $monday = Carbon::now()->setISODate($year, $week)->startOfWeek();
+                    $nextMonday = (clone $monday)->addWeek()->startOfWeek();
+                    $nextSunday = (clone $nextMonday)->endOfWeek();
+
+                    $nextQuery = AbsensiKaryawan::join('profile_karyawan', 'absensi_karyawan.id_karyawan', '=', 'profile_karyawan.id')
+                        ->select('absensi_karyawan.*','profile_karyawan.nama_lengkap as nama_karyawan')
+                        ->whereBetween('tanggal_absensi', [$nextMonday->toDateString(), $nextSunday->toDateString()])
+                        ->orderBy('tanggal_absensi','desc');
+
+                    $nextDesktop = (clone $nextQuery)->paginate(5);
+                    $nextMobile = (clone $nextQuery)->paginate(2);
+
+                    if ($nextDesktop->total() > 0) {
+                        $fetch_data_absensi_karyawan_desktop = $nextDesktop;
+                        $fetch_data_absensi_karyawan_mobile = $nextMobile;
+                        $used_next_week = true;
+                        // Format shown filter like 'YYYY-Www'
+                        $shown_filter_value_week = $nextMonday->format('o') . '-W' . $nextMonday->format('W');
+
+                        $fetch_data_absensi_karyawan_desktop->appends(['filter_type' => 'week', 'filter_value' => $shown_filter_value_week]);
+                        $fetch_data_absensi_karyawan_mobile->appends(['filter_type' => 'week', 'filter_value' => $shown_filter_value_week]);
+                    } else {
+                        $no_data_next_week = true;
+                    }
+                }
+            } catch (\Exception $e) {
+                // ignore parsing errors
+            }
+        }
+
+        return view('admin.histori_absensi_karyawan',compact('fetch_data_absensi_karyawan_desktop','fetch_data_absensi_karyawan_mobile','used_next_month','requested_filter_value','shown_filter_value','no_data_next_month'));
     }
 
     public function historyAbsensiByKaryawan(){

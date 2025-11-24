@@ -11,6 +11,8 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <head>
+    <!-- Add logo page-->
+    <link rel="icon" type="image/png" href="{{ asset('logo/logo_ingoo_page.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INGOO || Histori Absensi ({{ session('role') }})</title>
@@ -177,7 +179,44 @@
                         @if (Session::has('message'))
                         <div class="alert alert-success m-3" role="alert"><center>{{ Session::get('message') }}</center></div>
                         @endif
+                        <hr class="mt-3 mb-1" />
+                        <!-- Filter form: pilih per bulan atau per minggu -->
+                        <form method="GET" action="{{ route('histori_absensi_karyawan') }}" class="row g-2 mb-3">
+                            <div class="col-auto">
+                                <label for="filter_type" class="form-label">Filter</label>
+                                <select id="filter_type" name="filter_type" class="form-select">
+                                    <option value="">-- Semua --</option>
+                                    <option value="month" {{ request('filter_type') == 'month' ? 'selected' : '' }}>Per Bulan</option>
+                                    <option value="week" {{ request('filter_type') == 'week' ? 'selected' : '' }}>Per Minggu</option>
+                                </select>
+                            </div>
+                            <div class="col-auto" id="month_input_wrapper" style="display: {{ request('filter_type') == 'month' ? 'block' : 'none' }};">
+                                <label for="filter_value_month" class="form-label">Pilih Bulan</label>
+                                <input id="filter_value_month" type="month" class="form-control" value="{{ request('filter_type') == 'month' ? request('filter_value') : '' }}" @if(request('filter_type') == 'month') name="filter_value" @else disabled @endif>
+                            </div>
+                            <div class="col-auto" id="week_input_wrapper" style="display: {{ request('filter_type') == 'week' ? 'block' : 'none' }};">
+                                <label for="filter_value_week" class="form-label">Pilih Minggu</label>
+                                <input id="filter_value_week" type="week" class="form-control" value="{{ request('filter_type') == 'week' ? request('filter_value') : '' }}" @if(request('filter_type') == 'week') name="filter_value" @else disabled @endif>
+                            </div>
+                            <div class="col-auto align-self-end">
+                                <button type="submit" class="btn btn-outline-primary">Terapkan</button>
+                                <a href="{{ route('histori_absensi_karyawan') }}" class="btn btn-outline-secondary">Reset</a>
+                            </div>
+                        </form>
+
                         <div class="table-responsive">
+                            @if(isset($used_next_month) && $used_next_month)
+                                <div class="alert alert-info">Menampilkan data bulan berikutnya: <strong>{{ $shown_filter_value }}</strong> karena tidak ada data pada bulan yang dipilih: <strong>{{ $requested_filter_value }}</strong>.</div>
+                            @endif
+                            @if(isset($no_data_next_month) && $no_data_next_month)
+                                <div class="alert alert-warning">Tidak ada data di bulan selanjutnya ({{ $requested_filter_value }} -> {{ \Carbon\Carbon::createFromFormat('Y-m',$requested_filter_value)->addMonth()->format('Y-m') }}).</div>
+                            @endif
+                            @if(isset($used_next_week) && $used_next_week)
+                                <div class="alert alert-info">Menampilkan data minggu berikutnya: <strong>{{ $shown_filter_value_week }}</strong> karena tidak ada data pada minggu yang dipilih: <strong>{{ $requested_filter_value_week }}</strong>.</div>
+                            @endif
+                            @if(isset($no_data_next_week) && $no_data_next_week)
+                                <div class="alert alert-warning">Tidak ada data di minggu selanjutnya ({{ $requested_filter_value_week }}).</div>
+                            @endif
                             <div class="if-table-displays-in-mobile">
                                 <table id="absensiMobileTable" class="table table-bordered table-striped mt-3">
                                     <thead>
@@ -231,6 +270,19 @@
                                             </td>
                                         </tr>
                                         @endforeach
+                                        @if($fetch_data_absensi_karyawan_mobile->total() == 0)
+                                            <tr>
+                                                <td colspan="10" class="text-center">
+                                                    @if(isset($no_data_next_month) && $no_data_next_month)
+                                                        Tidak ada data di bulan selanjutnya
+                                                    @elseif(isset($no_data_next_week) && $no_data_next_week)
+                                                        Tidak ada data di minggu selanjutnya
+                                                    @else
+                                                        Tidak ada data untuk periode yang dipilih
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
@@ -287,6 +339,19 @@
                                             </td>
                                         </tr>
                                         @endforeach
+                                        @if($fetch_data_absensi_karyawan_desktop->total() == 0)
+                                            <tr>
+                                                <td colspan="10" class="text-center">
+                                                    @if(isset($no_data_next_month) && $no_data_next_month)
+                                                        Tidak ada data di bulan selanjutnya
+                                                    @elseif(isset($no_data_next_week) && $no_data_next_week)
+                                                        Tidak ada data di minggu selanjutnya
+                                                    @else
+                                                        Tidak ada data untuk periode yang dipilih
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
@@ -368,6 +433,13 @@
             url.searchParams.append('sort_by', sortBy);
             url.searchParams.append('sort_order', sortOrder);
             url.searchParams.append('per_page', tableType === 'mobile' ? 2 : 5);
+            // preserve current filter (if any) so AJAX respects month/week filter
+            const currentFilterType = document.getElementById('filter_type') ? document.getElementById('filter_type').value : '';
+            let currentFilterValue = '';
+            if (currentFilterType === 'month') currentFilterValue = document.getElementById('filter_value_month') ? document.getElementById('filter_value_month').value : '';
+            if (currentFilterType === 'week') currentFilterValue = document.getElementById('filter_value_week') ? document.getElementById('filter_value_week').value : '';
+            if (currentFilterType) url.searchParams.append('filter_type', currentFilterType);
+            if (currentFilterValue) url.searchParams.append('filter_value', currentFilterValue);
 
             console.log('Request URL:', url.toString());
             const response = await fetch(url.toString());
@@ -472,6 +544,41 @@
         console.log('DOMContentLoaded: Attaching AJAX sorting');
         attachAdminAjaxSorting('absensiMobileTable', true);
         attachAdminAjaxSorting('absensiDesktopTable', false);
+        // Toggle filter inputs (month/week) based on selected filter_type
+        const filterTypeEl = document.getElementById('filter_type');
+        const monthWrapper = document.getElementById('month_input_wrapper');
+        const weekWrapper = document.getElementById('week_input_wrapper');
+        if (filterTypeEl) {
+            // ensure correct disabled state on load
+            const monthInput = document.getElementById('filter_value_month');
+            const weekInput = document.getElementById('filter_value_week');
+            if (monthInput && weekInput) {
+                // If filter type is month, enable month input and disable week input, else vice versa
+                const initVal = filterTypeEl.value;
+                monthInput.disabled = initVal !== 'month';
+                weekInput.disabled = initVal !== 'week';
+            }
+
+            filterTypeEl.addEventListener('change', function() {
+                const v = this.value;
+                if (v === 'month') {
+                    monthWrapper.style.display = 'block';
+                    weekWrapper.style.display = 'none';
+                    if (monthInput) { monthInput.disabled = false; monthInput.setAttribute('name','filter_value'); }
+                    if (weekInput) { weekInput.disabled = true; weekInput.removeAttribute('name'); }
+                } else if (v === 'week') {
+                    monthWrapper.style.display = 'none';
+                    weekWrapper.style.display = 'block';
+                    if (monthInput) { monthInput.disabled = true; monthInput.removeAttribute('name'); }
+                    if (weekInput) { weekInput.disabled = false; weekInput.setAttribute('name','filter_value'); }
+                } else {
+                    monthWrapper.style.display = 'none';
+                    weekWrapper.style.display = 'none';
+                    if (monthInput) { monthInput.disabled = true; monthInput.removeAttribute('name'); }
+                    if (weekInput) { weekInput.disabled = true; weekInput.removeAttribute('name'); }
+                }
+            });
+        }
     });
 </script>
 </html>
