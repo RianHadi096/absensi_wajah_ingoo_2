@@ -30,7 +30,7 @@ Route::get('admin/dashboard', function(){
 })->name('admin/dashboard');
 
 //logout
-Route::get('karyawan/logout',[LoginController::class,'logout'])->name('karyawan/logout');
+Route::get('karyawan/logout',[LogoutController::class,'logout'])->name('karyawan/logout');
 Route::get('admin/logout',[LogoutController::class,'admin_logout'])->name('admin/logout');
 
 //absensi kamera

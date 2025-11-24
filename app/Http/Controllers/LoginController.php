@@ -41,7 +41,7 @@ class LoginController extends Controller
                 $request->session()->put('user_name', Auth::user()->name);
                 return redirect()->intended('karyawan/dashboard')->with('message', 'Login successful!');
             }else{
-                return redirect()->back()->with('message', 'Login gagal! Silakan cek kembali username & password.')->withInput();
+                return redirect()->back()->withError('Gagal Login! Cek kembali username, password atau role anda.')->withInput();
             }
         }elseif ($request->input('role') == 'admin') {
             // Hardcoded admin credentials (no database)
@@ -57,16 +57,9 @@ class LoginController extends Controller
                 $request->session()->put('role', 'admin');
                 return redirect()->intended('admin/dashboard')->with('message', 'Login successful!');
             } else {
-                return redirect()->back()->with('message', 'Admin login failed! Invalid credentials.')->withInput();
+                return redirect()->back()->withError('message', 'Gagal login sebagai admin! Cek kembali username, password atau role-nya.')->withInput();
             }
         }
 
-    }
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect('/login')->with('message', 'You have been logged out.');
     }
 }

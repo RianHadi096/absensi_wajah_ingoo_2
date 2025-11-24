@@ -141,4 +141,26 @@ class KaryawanController extends Controller
         ]);
         return redirect()->route('admin.karyawan')->with('message', 'Data Karyawan Berhasil Diupdate.');
     }
+    //ganti password
+    public function changePassword(Request $request){
+        //validasi password
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = Auth::user();
+
+        //cek password lama
+        if (!Hash::check($request->current_password, $user->password)) {
+            return redirect()->back()->withErrors(['current_password' => 'Password lama tidak sesuai.']);
+        }
+
+        //update password baru
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return redirect()->back()->with('message', 'Password berhasil diubah.');
+    }
+
 }

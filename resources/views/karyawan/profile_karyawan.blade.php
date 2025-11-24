@@ -239,6 +239,13 @@
                             <hr>
                             <!-- Password Change Form -->
                             <div class="profile-field mb-3">
+                                <!-- Pesan dari Controller -->
+                                @if(session('error'))
+                                    <div class="alert alert-danger">{{ session('error') }}</div>
+                                @endif
+                                @if(session('message'))
+                                    <div class="alert alert-info">{{ session('message') }}</div>
+                                @endif
                                 <label class="fw-bold text-muted d-block mb-2">Ubah Password:</label>
                                 <!-- Button toggles the visibility of the password form (hidden by default) -->
                                 <button id="togglePasswordButton" class="btn btn-outline-dark btn-sm mb-2" aria-controls="passwordFormContainer" aria-expanded="false">
@@ -282,8 +289,8 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn btn-primary">Ubah Password</button>
-                                        <button type="button" id="cancelPasswordForm" class="btn btn-link">Batal</button>
+                                        <button type="submit" class="btn btn-dark">Ubah Password</button>
+                                        <button type="button" id="cancelPasswordForm" class="btn btn-link text-dark">Batal</button>
                                     </form>
                                     @if(session('success'))
                                         <div class="alert alert-success mt-3">{{ session('success') }}</div>

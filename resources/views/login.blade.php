@@ -55,6 +55,9 @@
             font-size: 0.85rem;
             opacity: 1;
         }
+        .message-text-mobile {
+            font-size: 0.9rem;
+        }
     }
 </style>
 
@@ -71,8 +74,11 @@
                                                 <img class="logo" src="{{ asset('logo/logo_ingoo.png') }}" alt="Company Logo">
                                             </div>  
                                             <div class="overflow-auto">
-                                                @if (Session::has('message'))
-                                                <div class="alert alert-warning" role="alert"><center>{{ Session::get('message') }}</center></div>
+                                                @if(session('error'))
+                                                    <div class="message-text-mobile alert alert-danger mt-3">{{ session('error') }}</div>
+                                                @endif
+                                                @if(session('message'))
+                                                    <div class="message-text-mobile alert alert-info mt-3">{{ session('message') }}</div>
                                                 @endif
                                             </div>
                                             <form class="user" method="POST" action="{{ route('prosesAuthentifikasi') }}">
