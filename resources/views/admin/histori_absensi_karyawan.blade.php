@@ -228,9 +228,11 @@
                                             <th data-sortable="jam_keluar">Jam Keluar <span class="sort-indicator"></span></th>
                                             <th data-sortable="status_absensi">Status Absensi <span class="sort-indicator"></span></th>
                                             <th>Koordinat (Google Maps)</th>
+                                            <th>Keterangan</th>
                                             <th>Posisi Absensi</th>
                                             <th>Foto Masuk</th>
                                             <th>Foto Keluar</th>
+                                            <th>Foto Sakit/Izin</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -242,12 +244,17 @@
                                             <td>{{ $absensi_mobile->jam_masuk ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_mobile->status_absensi ?? 'N/A'}}</td>
+                                            <td>{{ $absensi_mobile->keterangan ?? 'N/A'}}</td>
+                                            @if($absensi_mobile->koordinat)
+                                                <td><a href="#" class="koordinat-link" data-koordinat="{{ $absensi_mobile->koordinat }}">{{ $absensi_mobile->koordinat }}</a></td>
+                                            @else
+                                                <td>N/A</td>
+                                            @endif
                                             @if($absensi_mobile->koordinat == '-7.0381802,107.7100255')
                                                 <td><span class="badge bg-primary">Di Kantor</span></td>
                                             @else
                                                 <td><span class="badge bg-danger">Di Luar Kantor</span></td>
                                             @endif
-                                            <td><a href="#" class="koordinat-link" data-koordinat="{{ $absensi_mobile->koordinat }}">{{ $absensi_mobile->koordinat }}</a></td>
                                             <td>
                                                 @if ($absensi_mobile->foto_masuk)
                                                     <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
@@ -255,7 +262,7 @@
                                                         <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_mobile->foto_masuk) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
                                                     </div>
                                                 @else
-                                                    <span>Tidak ada bukti foto</span>
+                                                    <span>Tidak ada bukti foto saat masuk absensi</span>
                                                 @endif
                                             </td>
                                             <td>
@@ -265,7 +272,17 @@
                                                         <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_mobile->foto_keluar) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
                                                     </div>
                                                 @else
-                                                    <span>Tidak ada bukti foto</span>
+                                                    <span>Tidak ada bukti foto saat keluar absensi</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($absensi_mobile->foto_sakit)
+                                                    <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
+                                                    <div class="d-flex justify-content-center">
+                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_mobile->foto_sakit) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
+                                                    </div>
+                                                @else
+                                                    <span>Tidak ada bukti foto saat izin/sakit</span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -296,10 +313,12 @@
                                             <th data-sortable="jam_masuk">Jam Masuk <span class="sort-indicator"></span></th>
                                             <th data-sortable="jam_keluar">Jam Keluar <span class="sort-indicator"></span></th>
                                             <th data-sortable="status_absensi">Status Absensi <span class="sort-indicator"></span></th>
+                                            <th>Keterangan</th>
                                             <th>Koordinat (Google Maps)</th>
                                             <th>Posisi Absensi</th>
                                             <th>Foto Masuk</th>
                                             <th>Foto Keluar</th>
+                                            <th>Foto Sakit/Izin</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -311,8 +330,13 @@
                                             <td>{{ $absensi_desktop->jam_masuk ?? 'N/A' }}</td>
                                             <td>{{ $absensi_desktop->jam_keluar ?? 'N/A' }}</td>
                                             <td>{{ $absensi_desktop->status_absensi ?? 'N/A'}}</td>
-                                            <td><a href="#" class="koordinat-link" data-koordinat="{{ $absensi_desktop->koordinat }}">{{ $absensi_desktop->koordinat }}</a></td>
-                                            @if($absensi_mobile->koordinat == '-7.0381802,107.7100255')
+                                            <td>{{ $absensi_desktop->keterangan ?? 'N/A'}}</td>
+                                            @if($absensi_desktop->koordinat)
+                                                <td><a href="#" class="koordinat-link" data-koordinat="{{ $absensi_desktop->koordinat }}">{{ $absensi_desktop->koordinat }}</a></td>
+                                            @else
+                                                <td>N/A</td>
+                                            @endif
+                                            @if($absensi_desktop->koordinat == '-7.0381802,107.7100255')
                                                 <td><span class="badge bg-primary">Di Kantor</span></td>
                                             @else
                                                 <td><span class="badge bg-danger">Di Luar Kantor</span></td>
@@ -335,6 +359,16 @@
                                                     </div>
                                                 @else
                                                     <span>Tidak ada bukti foto saat keluar absensi</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($absensi_desktop->foto_sakit)
+                                                    <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
+                                                    <div class="d-flex justify-content-center">
+                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_desktop->foto_sakit) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
+                                                    </div>
+                                                @else
+                                                    <span>Tidak ada bukti foto saat izin/sakit</span>
                                                 @endif
                                             </td>
                                         </tr>

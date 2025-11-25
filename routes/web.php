@@ -24,6 +24,10 @@ Route::post('login/prosesAuth', [LoginController::class, 'authenticate'])->name(
 Route::get('karyawan/dashboard', function () {
     return view('dashboard_karyawan');
 })->middleware('auth')->name('karyawan/dashboard');
+//admin
+Route::get('admin/dashboard', function () {
+    return view('dashboard_admin');
+})->middleware('auth')->name('admin/dashboard');
 
 //dashboard karyawan
 Route::get('karyawan/dashboard', [KaryawanController::class, 'dashboard'])->middleware('auth')->name('karyawan/dashboard');
@@ -79,3 +83,5 @@ Route::get('karyawan/absensi/izin', [AbsensiKaryawanController::class, 'absensiI
 Route::get('karyawan/absensi/sakit', [AbsensiKaryawanController::class, 'absensiSakit'])->middleware('auth')->name('karyawan/absensi/sakit');
 Route::post('karyawan/absensi/rekam_izin', [AbsensiKaryawanController::class, 'rekamIzin'])->middleware('auth')->name('karyawan/absensi/rekam_izin');
 Route::post('karyawan/absensi/rekam_sakit', [AbsensiKaryawanController::class, 'rekamSakit'])->middleware('auth')->name('karyawan/absensi/rekam_sakit');
+Route::post('upload-sakit', [AbsensiKaryawanController::class, 'uploadFotoSakit'])->middleware('auth')->name('upload-sakit');
+Route::post('upload-izin', [AbsensiKaryawanController::class, 'uploadFotoIzin'])->middleware('auth')->name('upload-izin');

@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Exports\AbsensiKaryawanExport;
 use Illuminate\Contracts\Session\Session;
 use Maatwebsite\Excel\Facades\Excel;
@@ -30,15 +31,312 @@ class AbsensiKaryawanController extends Controller{
         $sekarang = Carbon::now()->format('H:i');
         $tanggal = Carbon::now()->format('d-m-Y');
 
-        return view('karyawan.absensiPage', compact('sudah_absen_masuk','sudah_absen_keluar','jam_masuk_kerja','jam_keluar_kerja','sekarang','tanggal'));
+        //ambil keterangan sakit/izin jika ada
+        $sakit = $today_absensi && $today_absensi->status_absensi === 'Sakit';
+        $izin = $today_absensi && $today_absensi->status_absensi === 'Izin';
+
+        return view('karyawan.absensiPage', compact(
+            'sakit',
+            'izin',
+            'sudah_absen_masuk',
+            'sudah_absen_keluar',
+            'jam_masuk_kerja',
+            'jam_keluar_kerja',
+            'sekarang',
+            'tanggal'
+            )
+        );
 
     }
     public function absensiIzin(){
-        return view('karyawan.absensiIzin');
+        return view('karyawan.absensi_izin');
     }
     public function absensiSakit(){
-        return view('karyawan.absensiSakit');
+        return view('karyawan.absensi_sakit');
     }
+
+    public function uploadFotoSakit(Request $request){
+        try {
+            Log::info('uploadFotoSakit: request received', [
+                'has_files' => $request->has('files'),
+                'files_count' => count($request->file('files') ?? []),
+                'user_id' => session('user_id'),
+            ]);
+
+            // Validate input
+            $request->validate([
+                'files' => 'required|array|min:1',
+                'files.*' => 'file|mimes:jpeg,png,gif,jpg,pdf|max:5120', // 5MB max
+            ], [
+                'files.required' => 'Silakan pilih minimal satu file',
+                'files.array' => 'File harus berupa array',
+                'files.*.mimes' => 'Format file harus JPG, PNG, GIF, atau PDF',
+                'files.*.max' => 'Ukuran file maksimal 5MB',
+            ]);
+
+            $userId = session('user_id');
+            if (!$userId) {
+                throw new \Exception('User ID tidak ditemukan di session');
+            }
+
+            $uploadedFiles = [];
+            $errors = [];
+
+            // Create directory if not exists
+            $storagePath = 'sakit_photos';
+            if (!Storage::disk('public')->exists($storagePath)) {
+                Storage::disk('public')->makeDirectory($storagePath);
+                Log::info('uploadFotoSakit: created storage directory', ['path' => $storagePath]);
+            }
+
+            // Process each file
+            foreach ($request->file('files') as $file) {
+                try {
+                    $filename = 'sakit_' . $userId . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $storagePath . '/' . $filename;
+
+                    Log::info('uploadFotoSakit: uploading file', [
+                        'original_name' => $file->getClientOriginalName(),
+                        'filename' => $filename,
+                        'size' => $file->getSize(),
+                    ]);
+
+                    // Store file
+                    Storage::disk('public')->put($path, file_get_contents($file));
+
+                    $uploadedFiles[] = [
+                        'filename' => $filename,
+                        'path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'size' => $file->getSize(),
+                        'uploaded_at' => Carbon::now()->toDateTimeString(),
+                    ];
+
+                } catch (\Exception $e) {
+                    Log::error('uploadFotoSakit: error uploading file', [
+                        'file_name' => $file->getClientOriginalName(),
+                        'error' => $e->getMessage(),
+                    ]);
+                    $errors[] = 'Gagal mengupload file: ' . $file->getClientOriginalName();
+                }
+            }
+
+            if (count($uploadedFiles) > 0) {
+                // Save metadata to database (absensi_karyawan)
+                try {
+                    $date_only = Carbon::now()->toDateString();
+                    $keterangan = $request->input('keterangan', null);
+                    // Use the first uploaded file for foto_sakit
+                    $firstFile = $uploadedFiles[0];
+
+                    Log::info('uploadFotoSakit: preparing to updateOrCreate absensi', [
+                        'userId' => $userId,
+                        'date' => $date_only,
+                        'firstFile' => $firstFile,
+                        'keterangan' => $keterangan,
+                    ]);
+
+                    // Update existing attendance record for today or create if not exists
+                    $absensiRecord = AbsensiKaryawan::updateOrCreate(
+                        [
+                            'id_karyawan' => $userId,
+                            'tanggal_absensi' => $date_only,
+                        ],
+                        [
+                            'status_absensi' => 'Sakit',
+                            'koordinat' => $request->input('koordinat', ''),
+                            'foto_sakit' => $firstFile['path'],
+                            'keterangan' => $keterangan,
+                        ]
+                    );
+
+                    Log::info('uploadFotoSakit: updateOrCreate success', [
+                        'absensi_id' => $absensiRecord->id ?? null,
+                        'record' => $absensiRecord->toArray(),
+                    ]);
+
+                } catch (\Exception $e) {
+                    Log::error('uploadFotoSakit: database error', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                    $errors[] = 'Gagal menyimpan ke database: ' . $e->getMessage();
+                }
+
+                return response()->json([
+                    'success' => count($errors) === 0,
+                    'message' => count($uploadedFiles) . ' file berhasil diupload' . (count($errors) > 0 ? ', namun ada error: ' . implode('; ', $errors) : ''),
+                    'files' => $uploadedFiles,
+                    'db_errors' => $errors,
+                ], count($errors) === 0 ? 200 : 207);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal mengupload file',
+                    'errors' => $errors,
+                ], 422);
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('uploadFotoSakit: validation error', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('uploadFotoSakit: general exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function uploadFotoIzin(Request $request){
+        try {
+            Log::info('uploadFotoIzin: request received', [
+                'has_files' => $request->has('files'),
+                'files_count' => count($request->file('files') ?? []),
+                'user_id' => session('user_id'),
+            ]);
+
+            // Validate input
+            $request->validate([
+                'files' => 'required|array|min:1',
+                'files.*' => 'file|image|mimes:jpeg,png,gif,jpg|max:5120', // 5MB max
+            ], [
+                'files.required' => 'Silakan pilih minimal satu file',
+                'files.array' => 'File harus berupa array',
+                'files.*.image' => 'File harus berupa gambar',
+                'files.*.mimes' => 'Format file harus JPG, PNG, atau GIF',
+                'files.*.max' => 'Ukuran file maksimal 5MB',
+            ]);
+
+            $userId = session('user_id');
+            if (!$userId) {
+                throw new \Exception('User ID tidak ditemukan di session');
+            }
+
+            $uploadedFiles = [];
+            $errors = [];
+
+            // Create directory if not exists
+            $storagePath = 'izin_photos';
+            if (!Storage::disk('public')->exists($storagePath)) {
+                Storage::disk('public')->makeDirectory($storagePath);
+                Log::info('uploadFotoIzin: created storage directory', ['path' => $storagePath]);
+            }
+
+            // Process each file
+            foreach ($request->file('files') as $file) {
+                try {
+                    $filename = 'izin_' . $userId . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $storagePath . '/' . $filename;
+
+                    Log::info('uploadFotoIzin: uploading file', [
+                        'original_name' => $file->getClientOriginalName(),
+                        'filename' => $filename,
+                        'size' => $file->getSize(),
+                    ]);
+
+                    // Store file
+                    Storage::disk('public')->put($path, file_get_contents($file));
+
+                    $uploadedFiles[] = [
+                        'filename' => $filename,
+                        'path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'size' => $file->getSize(),
+                        'uploaded_at' => Carbon::now()->toDateTimeString(),
+                    ];
+
+                } catch (\Exception $e) {
+                    Log::error('uploadFotoIzin: error uploading file', [
+                        'file_name' => $file->getClientOriginalName(),
+                        'error' => $e->getMessage(),
+                    ]);
+                    $errors[] = 'Gagal mengupload file: ' . $file->getClientOriginalName();
+                }
+            }
+
+            if (count($uploadedFiles) > 0) {
+                // Save metadata to database (absensi_karyawan)
+                try {
+                    $date_only = Carbon::now()->toDateString();
+                    $keterangan = $request->input('keterangan', null);
+                    // Use the first uploaded file for foto_izin
+                    $firstFile = $uploadedFiles[0];
+
+                    Log::info('uploadFotoIzin: preparing to updateOrCreate absensi', [
+                        'userId' => $userId,
+                        'date' => $date_only,
+                        'firstFile' => $firstFile,
+                        'keterangan' => $keterangan,
+                    ]);
+
+                    // Update existing attendance record for today or create if not exists  
+                    $absensiRecord = AbsensiKaryawan::updateOrCreate(
+                        [
+                            'id_karyawan' => $userId,
+                            'tanggal_absensi' => $date_only,
+                        ],
+                        [
+                            'status_absensi' => 'Izin',
+                            'koordinat' => $request->input('koordinat', ''),
+                            'foto_izin' => $firstFile['path'],
+                            'keterangan' => $keterangan,
+                        ]
+                    );
+
+                    Log::info('uploadFotoIzin: updateOrCreate success', [
+                        'absensi_id' => $absensiRecord->id ?? null,
+                        'record' => $absensiRecord->toArray(),
+                    ]);
+
+                } catch (\Exception $e) {
+                    Log::error('uploadFotoIzin: database error', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                    $errors[] = 'Gagal menyimpan ke database: ' . $e->getMessage();
+                }
+
+                return response()->json([
+                    'success' => count($errors) === 0,
+                    'message' => count($uploadedFiles) . ' file berhasil diupload' . (count($errors) > 0 ? ', namun ada error: ' . implode('; ', $errors) : ''),
+                    'files' => $uploadedFiles,
+                    'db_errors' => $errors,
+                ], count($errors) === 0 ? 200 : 207);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal mengupload file',
+                    'errors' => $errors,
+                ], 422);
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('uploadFotoIzin: validation error', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('uploadFotoIzin: general exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function historyAbsensiMaster(Request $request){
         //ambil semua data histori absensi untuk semua karyawan
         $filter_type = $request->get('filter_type', null); // 'week' or 'month'

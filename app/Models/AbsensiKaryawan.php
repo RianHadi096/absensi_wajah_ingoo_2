@@ -12,12 +12,15 @@ class AbsensiKaryawan extends Model
     protected $fillable = [
         'id_karyawan',
         'tanggal_absensi',
+        'status_absensi',
+        'keterangan',
+        'foto_sakit',
+        'foto_izin',
         'jam_masuk',
         'jam_keluar',
+        'koordinat',
         'foto_masuk',
         'foto_keluar',
-        'status_absensi',
-        'koordinat',
     ];
 
     public function karyawan()

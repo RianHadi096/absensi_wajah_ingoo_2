@@ -220,6 +220,10 @@
                         <div class="alert alert-success text-center mt-4" role="alert">
                             <span>Anda sudah melakukan absensi masuk dan keluar hari ini.</span>
                         </div>
+                    @elseif($sakit || $izin)
+                        <div class="alert alert-success text-center mt-4" role="alert">
+                            <span>Anda sudah melakukan absensi {{ $sakit ? 'sakit' : 'izin' }} hari ini.</span>
+                        </div>
                     @elseif($sudah_absen_masuk && !$sudah_absen_keluar)
                         <div class="alert alert-success text-center mt-4" role="alert">
                             <span>Anda sudah melakukan absensi masuk hari ini.</span>
