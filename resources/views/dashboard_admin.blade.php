@@ -192,9 +192,9 @@
     <footer>
         <div class="container-fluid">
             <div class="d-flex justify-content-around p-2">
-                <!-- Desktop: full copyright -->
+                <!-- Desktop: full copyright with -->
                 <span class="text-center desktop-footer">&copy; 2025 Rian Hadi & PT.Internet Network Global Online. All rights reserved</span>
-                <!-- Mobile: compact single-line copyright + version (shown at <=500px) -->
+                <!-- Mobile: compact single-line copyright + version with smaller font size (shown at <=500px) -->
                 <span class="text-center mobile-footer">&copy; 2025 Rian Hadi & INGOO | v 1.0.0 Beta 1</span>
                 <span class="text-center version-footer">Version 1.0.0 Beta 1</span>
             </div>

@@ -7,6 +7,7 @@ use App\Http\Controllers\LogoutController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AbsensiKaryawanController;
 use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\AdminController;
 
 Route::get('/', [LoginController::class, 'showLoginForm']);
 
@@ -20,15 +21,8 @@ Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 //Login authenticate
 Route::post('login/prosesAuth', [LoginController::class, 'authenticate'])->name('prosesAuthentifikasi');
 
-//dashboard
-Route::get('karyawan/dashboard', function () {
-    return view('dashboard_karyawan');
-})->middleware('auth')->name('karyawan/dashboard');
-//admin
-Route::get('admin/dashboard', function () {
-    return view('dashboard_admin');
-})->middleware('auth')->name('admin/dashboard');
-
+//dashboard admin
+Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin/dashboard');
 //dashboard karyawan
 Route::get('karyawan/dashboard', [KaryawanController::class, 'dashboard'])->middleware('auth')->name('karyawan/dashboard');
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\User;
 
 class LoginController extends Controller
 {   
@@ -39,7 +40,7 @@ class LoginController extends Controller
                 //membuat sesi id,nama user
                 $request->session()->put('user_id', Auth::user()->id);
                 $request->session()->put('user_name', Auth::user()->name);
-                return redirect()->intended('karyawan/dashboard')->with('message', 'Login successful!');
+                return redirect()->route('karyawan/dashboard');
             }else{
                 return redirect()->back()->withError('Gagal Login! Cek kembali username, password atau role anda.')->withInput();
             }
@@ -52,10 +53,19 @@ class LoginController extends Controller
             $inputPassword = $request->input('password');
 
             if ($inputUsername === $adminUsername && $inputPassword === $adminPassword) {
+                // Create fake admin user instance
+                $adminUser = new User();
+                $adminUser->id = 0;  // or a unique id not conflicting with real users
+                $adminUser->name = 'admin';
+                $adminUser->email = 'admin@example.com';
+
+                // Log in admin user via Laravel auth system
+                Auth::login($adminUser);
+
                 // Set session for admin
                 $request->session()->regenerate();
                 $request->session()->put('role', 'admin');
-                return redirect()->intended('admin/dashboard')->with('message', 'Login successful!');
+                return redirect()->route('admin/dashboard');
             } else {
                 return redirect()->back()->withError('message', 'Gagal login sebagai admin! Cek kembali username, password atau role-nya.')->withInput();
             }
