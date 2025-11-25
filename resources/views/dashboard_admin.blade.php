@@ -195,8 +195,8 @@
                 <!-- Desktop: full copyright -->
                 <span class="text-center desktop-footer">&copy; 2025 Rian Hadi & PT.Internet Network Global Online. All rights reserved</span>
                 <!-- Mobile: compact single-line copyright + version (shown at <=500px) -->
-                <span class="text-center mobile-footer">&copy; 2025 Rian Hadi & INGOO | v 1.0.0 alpha 0.1</span>
-                <span class="text-center version-footer">Version 1.0.0 Alpha 0.1</span>
+                <span class="text-center mobile-footer">&copy; 2025 Rian Hadi & INGOO | v 1.0.0 Beta 1</span>
+                <span class="text-center version-footer">Version 1.0.0 Beta 1</span>
             </div>
         </div>
     </footer>

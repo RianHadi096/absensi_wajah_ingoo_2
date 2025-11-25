@@ -364,9 +364,26 @@
                                             <td>
                                                 @if ($absensi_desktop->foto_sakit)
                                                     <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
-                                                    <div class="d-flex justify-content-center">
-                                                        <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_desktop->foto_sakit) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
-                                                    </div>
+                                                    @if(pathinfo($absensi_desktop->foto_sakit, PATHINFO_EXTENSION) == 'pdf')
+                                                        <div class="d-flex justify-content-center">
+                                                            <embed id="foto-karyawan" src="{{ asset('storage/'.$absensi_desktop->foto_sakit) }}" type="application/pdf" width="100%" height="400px" style="display:none"/>
+                                                        </div>
+                                                    @else
+                                                        <div class="d-flex justify-content-center">
+                                                            <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_desktop->foto_sakit) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
+                                                        </div>
+                                                    @endif
+                                                @elseif($absensi_desktop->foto_izin)
+                                                    <button id="toggleButton" class="btn btn-outline-dark mb-1"><i class="fa fa-file-image-o" aria-hidden="true"></i>Hide/Show</button>
+                                                    @if(pathinfo($absensi_desktop->foto_izin, PATHINFO_EXTENSION) == 'pdf')
+                                                        <div class="d-flex justify-content-center">
+                                                            <embed id="foto-karyawan" src="{{ asset('storage/'.$absensi_desktop->foto_izin) }}" type="application/pdf" width="100%" height="400px" style="display:none"/>
+                                                        </div>
+                                                    @else
+                                                        <div class="d-flex justify-content-center">
+                                                            <img id="foto-karyawan" src="{{ asset('storage/'.$absensi_desktop->foto_izin) }}" alt="Foto Karyawan" style="max-width: 100px; max-height: 100px; display:none">
+                                                        </div>
+                                                    @endif
                                                 @else
                                                     <span>Tidak ada bukti foto saat izin/sakit</span>
                                                 @endif
