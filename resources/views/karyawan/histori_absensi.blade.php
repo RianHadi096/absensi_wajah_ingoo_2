@@ -127,11 +127,7 @@
                             <i class="fa fa-bars" aria-hidden="true"></i><span class="hide-on-small"> Main Menu </span>
                             </button>
                             <div class="dropdown-menu" aria-labelledby="triggerId">
-                                @if ($show_check_out)
-                                    <a class="dropdown-item" href="{{ route('karyawan/absensi_kamera/check_out') }}"><i class="fa fa-user-circle-o" aria-hidden="true"></i><i class="fas fa-camera-alt" aria-hidden="true"></i> Absensi Keluar </a>
-                                @else
-                                    <a class="dropdown-item" href="{{ route('karyawan/absensi_kamera/check_in') }}"><i class="fa fa-user-circle-o" aria-hidden="true"></i><i class="fas fa-camera-alt" aria-hidden="true"></i> Absensi Masuk </a>
-                                @endif
+                                <a class="dropdown-item" href="{{ route('karyawan/absensi') }}"><i class="fa fa-pencil" aria-hidden="true"></i> Absensi</a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{{ route('karyawan/dashboard') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Kembali ke Main Menu</a>
                             </div>
@@ -165,11 +161,7 @@
                             <i class="fa fa-bars" aria-hidden="true"></i><span class="hide-on-small"> Main Menu </span>
                             </button>
                             <div class="dropdown-menu" aria-labelledby="triggerId">
-                                @if ($show_check_out)
-                                    <a class="dropdown-item" href="{{ route('karyawan/absensi_kamera/check_out') }}"><i class="fa fa-user-circle-o" aria-hidden="true"></i><i class="fas fa-camera-alt" aria-hidden="true"></i> Absensi Keluar </a>
-                                @else
-                                    <a class="dropdown-item" href="{{ route('karyawan/absensi_kamera/check_in') }}"><i class="fa fa-user-circle-o" aria-hidden="true"></i><i class="fas fa-camera-alt" aria-hidden="true"></i> Absensi Masuk </a>
-                                @endif
+                                <a class="dropdown-item" href="{{ route('karyawan/absensi') }}"><i class="fa fa-pencil" aria-hidden="true"></i> Absensi</a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{{ route('karyawan/dashboard') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Kembali ke Main Menu</a>
                             </div>

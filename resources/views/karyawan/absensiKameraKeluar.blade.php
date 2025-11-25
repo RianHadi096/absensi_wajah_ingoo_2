@@ -16,7 +16,7 @@
     <link rel="icon" type="image/png" href="{{ asset('logo/logo_ingoo_page.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INGOO || Absensi Kamera ({{ session('user_name') }})</title>
+    <title>INGOO || Absensi Kamera Keluar ({{ session('user_name') }})</title>
 </head>
 
 <style>

@@ -13,6 +13,18 @@ use App\Models\RegisterUser;
 
 class KaryawanController extends Controller
 {
+    public function dashboard(){
+        //cek apakah karyawan sudah absen masuk dan absen keluar hari ini
+        $userId = session('user_id');
+        $today_absensi = \App\Models\AbsensiKaryawan::where('id_karyawan', $userId)
+            ->where('tanggal_absensi', date('Y-m-d'))
+            ->first();
+        $sudah_absen_masuk = $today_absensi && $today_absensi->jam_masuk ? true : false;
+        $sudah_absen_keluar = $today_absensi && $today_absensi->jam_keluar ? true : false;
+
+        return view('dashboard_karyawan', compact('sudah_absen_masuk','sudah_absen_keluar'));
+    }
+
     public function index(){
         //get all data karyawan
         $fetch_karyawan_mobile = Karyawan::paginate(2);

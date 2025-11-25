@@ -25,9 +25,8 @@ Route::get('karyawan/dashboard', function () {
     return view('dashboard_karyawan');
 })->middleware('auth')->name('karyawan/dashboard');
 
-Route::get('admin/dashboard', function(){
-    return view('dashboard_admin');
-})->name('admin/dashboard');
+//dashboard karyawan
+Route::get('karyawan/dashboard', [KaryawanController::class, 'dashboard'])->middleware('auth')->name('karyawan/dashboard');
 
 //logout
 Route::get('karyawan/logout',[LogoutController::class,'logout'])->name('karyawan/logout');
@@ -71,3 +70,12 @@ Route::get('admin/export',[AbsensiKaryawanController::class,'exportToExcel'])->n
 //profile karyawan dengan auth id
 Route::get('karyawan/profile/{id}', [KaryawanController::class, 'profileKaryawan'])->middleware('auth')->name('karyawan.profile');
 Route::post('karyawan/change-password', [KaryawanController::class, 'changePassword'])->middleware('auth')->name('karyawan.changePassword');
+
+//absensi karyawan page
+Route::get('karyawan/absensi', [AbsensiKaryawanController::class, 'absensiPage'])->middleware('auth')->name('karyawan/absensi');
+
+//absensi izin dan sakit
+Route::get('karyawan/absensi/izin', [AbsensiKaryawanController::class, 'absensiIzin'])->middleware('auth')->name('karyawan/absensi/izin');
+Route::get('karyawan/absensi/sakit', [AbsensiKaryawanController::class, 'absensiSakit'])->middleware('auth')->name('karyawan/absensi/sakit');
+Route::post('karyawan/absensi/rekam_izin', [AbsensiKaryawanController::class, 'rekamIzin'])->middleware('auth')->name('karyawan/absensi/rekam_izin');
+Route::post('karyawan/absensi/rekam_sakit', [AbsensiKaryawanController::class, 'rekamSakit'])->middleware('auth')->name('karyawan/absensi/rekam_sakit');

@@ -180,12 +180,12 @@
                         <i class="fa fa-user" aria-hidden="true"></i>
                         <span class="text-center">Profile</span>
                     </a>
-                    <a class="btn btn-outline-dark menu-btn" href="{{ route('karyawan/absensi_kamera/check_in') }}" role="button">
-                        <i class="fas fa-camera-alt" aria-hidden="true"></i>
-                        <span class="text-center">Absensi Wajah</span>
-                    </a>
+                    <button class="btn btn-outline-dark menu-btn" onclick="location.href='{{ route('karyawan/absensi') }}'">
+                        <i class="fas fa-pencil" aria-hidden="true"></i>
+                        <span class="text-center">Absensi</span>
+                    </button>
                     <a class="btn btn-outline-dark menu-btn" href="{{ route('karyawan/histori_absensi') }}" role="button">
-                        <i class="fa fa-book" aria-hidden="true"></i>
+                        <i class="fa fa-table" aria-hidden="true"></i>
                         <span class="text-center">Histori Absensi</span>
                     </a>
                     <a class="btn btn-outline-dark menu-btn" href="#" role="button">

@@ -14,8 +14,32 @@ use Illuminate\Contracts\Session\Session;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiKaryawanController extends Controller{
-    
-public function historyAbsensiMaster(Request $request){
+
+    public function absensiPage(){
+        //cek apakah karyawan sudah absen masuk dan absen keluar hari ini
+        $userId = session('user_id');
+        $date_only = Carbon::now()->toDateString();
+        $today_absensi = AbsensiKaryawan::where('id_karyawan', $userId)->where('tanggal_absensi', $date_only)->first();
+        $sudah_absen_masuk = $today_absensi && $today_absensi->jam_masuk ? true : false;
+        $sudah_absen_keluar = $today_absensi && $today_absensi->jam_keluar ? true : false;
+
+        // atur jam kerja 08:00 - 17:00 (tanggal disesuaikan ke hari ini)
+        // gunakan Carbon::today()->setTime agar tanggalnya konsisten (hari ini) dan waktu tetap
+        $jam_masuk_kerja = Carbon::today()->setTime(8, 0, 0)->format('H:i');
+        $jam_keluar_kerja = Carbon::today()->setTime(17, 0, 0)->format('H:i');
+        $sekarang = Carbon::now()->format('H:i');
+        $tanggal = Carbon::now()->format('d-m-Y');
+
+        return view('karyawan.absensiPage', compact('sudah_absen_masuk','sudah_absen_keluar','jam_masuk_kerja','jam_keluar_kerja','sekarang','tanggal'));
+
+    }
+    public function absensiIzin(){
+        return view('karyawan.absensiIzin');
+    }
+    public function absensiSakit(){
+        return view('karyawan.absensiSakit');
+    }
+    public function historyAbsensiMaster(Request $request){
         //ambil semua data histori absensi untuk semua karyawan
         $filter_type = $request->get('filter_type', null); // 'week' or 'month'
         $filter_value = $request->get('filter_value', null); // e.g. '2023-05' for month or '2023-W20' for week
@@ -197,9 +221,9 @@ public function historyAbsensiMaster(Request $request){
         $karyawan = new Karyawan();
         $user = new User();
 
-        //inisiasi jam masuk kerja
-        $jam_masuk_kerja = Carbon::now()->setHour(8,0,0);
-        $jam_keluar_kerja = Carbon::now()->setHour(17,0,0);
+    // inisiasi jam masuk/keluar kerja tetap: 08:00 dan 17:00 (tanggal hari ini)
+    $jam_masuk_kerja = Carbon::today()->setTime(8, 0, 0);
+    $jam_keluar_kerja = Carbon::today()->setTime(17, 0, 0);
 
         //mengambil format tanggal
         $date_only = Carbon::now()->toDateString();
