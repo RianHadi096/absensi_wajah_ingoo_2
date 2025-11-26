@@ -31,11 +31,28 @@ class AbsensiKaryawanController extends Controller{
         $sekarang = Carbon::now()->format('H:i');
         $tanggal = Carbon::now()->format('d-m-Y');
 
+        //reset absensi jam 00:00 dan lakukan absensi baru sampai batas jam kerja 17:00
+        $absensi_baru = false;
+        if ($sekarang >= '00:00' && $sekarang <= '17:00') {
+            $absensi_baru = true;
+        }
+
+        //jika sudah lewat jam kerja 17:00 tetapi absen masuk, maka bisa absen keluar saja
+        $lembur = false;
+        if ($sekarang > '17:00' && $sudah_absen_masuk && !$sudah_absen_keluar) {
+            $lembur = true;
+        }
+        if ($sekarang > '17:00' && $sudah_absen_masuk && $sudah_absen_keluar) {
+            $lembur = true;
+        }
+
         //ambil keterangan sakit/izin jika ada
         $sakit = $today_absensi && $today_absensi->status_absensi === 'Sakit';
         $izin = $today_absensi && $today_absensi->status_absensi === 'Izin';
 
         return view('karyawan.absensiPage', compact(
+            'lembur',
+            'absensi_baru',
             'sakit',
             'izin',
             'sudah_absen_masuk',

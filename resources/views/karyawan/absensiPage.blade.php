@@ -215,10 +215,12 @@
                     {{ session('error') }}
                     </div>
                 @endif
-                @if($jam_masuk_kerja <= $sekarang && $sekarang <= $jam_keluar_kerja)
+                @if($absensi_baru)
+                    {{-- Reset absensi status for new day --}} 
                     @if($sudah_absen_masuk && $sudah_absen_keluar)
                         <div class="alert alert-success text-center mt-4" role="alert">
                             <span>Anda sudah melakukan absensi masuk dan keluar hari ini.</span>
+                            <span>Sampai jumpa di hari berikutnya.</span>
                         </div>
                     @elseif($sakit || $izin)
                         <div class="alert alert-success text-center mt-4" role="alert">
@@ -226,7 +228,7 @@
                         </div>
                     @elseif($sudah_absen_masuk && !$sudah_absen_keluar)
                         <div class="alert alert-success text-center mt-4" role="alert">
-                            <span>Anda sudah melakukan absensi masuk hari ini.</span>
+                            <span>Anda telah absen masuk hari ini. Silahkan absen lagi dengan (Absensi Keluar) jika mau pulang lebih awal.</span>
                         </div>
                         <div class="menu-grid">
                             <button class="btn btn-outline-dark menu-btn" onclick="location.href='{{ route('karyawan/absensi_kamera/check_in') }}'" disabled>
@@ -271,10 +273,41 @@
                             </button>
                         </div>
                     @endif
+                {{-- Jika sudah lewat jam kerja dan hanya bisa absen keluar --}}
+                @elseif($lembur)
+                    @if($sudah_absen_masuk && $sudah_absen_keluar)
+                        <div class="alert alert-success text-center mt-4" role="alert">
+                            <span>Anda sudah melakukan absensi masuk dan keluar hari ini.</span>
+                            <span>Sampai jumpa di hari berikutnya.</span>
+                        </div>
+                    @else
+                    <div class="alert alert-info text-center mt-4" role="alert">
+                        <span>Anda dalam waktu lembur. Anda bisa absen keluar dengan batas waktu sampai pukul 23:59</span>
+                    </div>
+                    <div class="menu-grid">
+                        <button class="btn btn-outline-dark menu-btn" onclick="location.href='{{ route('karyawan/absensi_kamera/check_in') }}'" disabled>
+                            <i class="fas fa-camera" aria-hidden="true"></i>
+                            <span class="text-center">Absensi Masuk</span>
+                        </button>
+                        <button class="btn btn-outline-dark menu-btn" onclick="location.href='{{ route('karyawan/absensi_kamera/check_out') }}'">
+                            <i class="fas fa-camera" aria-hidden="true"></i>
+                            <span class="text-center">Absensi Keluar</span>
+                        </button>
+                        <!-- Disable izin and sakit buttons after check-in -->
+                        <button class="btn btn-outline-dark menu-btn" onclick="location.href='{{ route('karyawan/absensi/izin') }}'"disabled>
+                            <i class="fas fa-file-medical" aria-hidden="true"></i>
+                            <span class="text-center">Absensi Izin</span>
+                        </button>
+                        <button class="btn btn-outline-dark menu-btn" onclick="location.href='{{ route('karyawan/absensi/sakit') }}'"disabled>
+                            <i class="fas fa-notes-medical" aria-hidden="true"></i>
+                            <span class="text-center">Absensi Sakit</span>
+                        </button>
+                    </div>
+                    @endif
                 @else
-                <div class="alert alert-warning text-center mt-4" role="alert">
-                    <p>Jam Kerja sudah habis. Anda tidak dapat melakukan absensi hari ini.</p>
-                </div>
+                    <div class="alert alert-warning text-center mt-4" role="alert">
+                        <span>Absensi untuk hari ini sudah ditutup. Silakan hubungi admin jika ada kendala.</span>
+                    </div>
                 @endif
             </div>
         </div>
