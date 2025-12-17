@@ -167,32 +167,111 @@
     <main>
         <div class="container">
             <div class="text-center mb-5"><h2 class="mt-5">Pengaturan</h2></div>
-                <div class="d-grid gap-2 col-6 mx-auto">
-                    <div class="form-check form-switch">
-                        <label class="form-check-label" for="locationSwitch" style="font-weight: bold">Lokasi (Koordinat GPS)</label>
-                        <input
-                            class="form-check-input"
-                            type="checkbox"
-                            id="locationSwitch"
-                        />
+                <div class="card w-75 mb-4 mx-auto">
+                    <div class="card-body">
+                        <div class="d-grid gap-2 col-6 mx-auto">
+                            <div class="form-check form-switch">
+                                <label class="form-check-label" for="locationSwitch" style="font-weight: bold">Lokasi (Koordinat GPS)</label>
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="locationSwitch"
+                                />
+                            </div>
+                            <div class="form-check form-switch">
+                                <label class="form-check-label" for="cameraSwitch" style="font-weight: bold">Kamera</label>
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="cameraSwitch"
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-check form-switch">
-                        <label class="form-check-label" for="cameraSwitch" style="font-weight: bold">Kamera</label>
-                        <input
-                            class="form-check-input"
-                            type="checkbox"
-                            id="cameraSwitch"
-                        />
+                </div>  
+            </div>
+        </div>
+        <div class="justify-content-center text-center mt-5">
+            <button type="button" class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#panduan-lokasi-kamera" aria-expanded="false" aria-controls="panduan-lokasi-kamera">
+                <i class="fa fa-question-circle"></i> Panduan Lokasi dan Kamera
+            </button>
+        </div>
+
+        <div class="container panduan-lokasi-kamera">
+            <div class="text-center mb-5"><h2 class="mt-5">Cara Mengatur Lokasi dan Kamera</h2></div>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Pengaturan Lokasi (Koordinat GPS)</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Untuk mengaktifkan atau menonaktifkan akses lokasi (GPS) pada perangkat Anda, ikuti langkah-langkah berikut:</p>
+                            <ol>
+                                <li><strong>Aktifkan/Nonaktifkan fitur:</strong> Gunakan saklar "Lokasi (Koordinat GPS)" di atas untuk mengaktifkan atau menonaktifkan fitur ini.</li>
+                                <li><strong>Pemberitahuan Browser:</strong> Saat pertama kali mengaktifkan, browser Anda mungkin akan meminta izin untuk mengakses lokasi Anda. Pilih "Izinkan" atau "Allow" untuk memberikan akses.</li>
+                                <li><strong>Pengaturan Perangkat:</strong> Jika Anda tidak melihat permintaan izin atau mengalami masalah, periksa pengaturan lokasi pada perangkat Anda (ponsel atau komputer). Pastikan layanan lokasi diaktifkan untuk browser yang Anda gunakan.</li>
+                                <ul>
+                                    <li><strong>Android:</strong> Pengaturan > Lokasi > Izin Aplikasi > [Nama Browser Anda] > Izinkan.</li>
+                                    <li><strong>iOS:</strong> Pengaturan > Privasi & Keamanan > Layanan Lokasi > [Nama Browser Anda] > Saat Menggunakan Aplikasi.</li>
+                                    <li><strong>Windows/macOS:</strong> Periksa pengaturan privasi sistem untuk lokasi dan pastikan browser Anda memiliki izin.</li>
+                                </ul>
+                            </ol>
+                            <p class="text-muted">Akses lokasi diperlukan untuk mencatat posisi Anda saat melakukan absensi.</p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Pengaturan Kamera</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Untuk mengaktifkan atau menonaktifkan akses kamera pada perangkat Anda, ikuti langkah-langkah berikut:</p>
+                            <ol>
+                                <li><strong>Aktifkan/Nonaktifkan fitur:
+                                </strong> Gunakan saklar "Kamera" di atas untuk mengaktifkan atau menonaktifkan fitur ini.</li>
+                                <li><strong>Pemberitahuan Browser:</strong> Saat pertama kali mengaktifkan, browser Anda mungkin akan meminta izin untuk mengakses kamera Anda. Pilih "Izinkan" atau "Allow" untuk memberikan akses.</li>
+                                <li><strong>Pengaturan Perangkat:</strong> Jika Anda tidak melihat permintaan izin atau mengalami masalah, periksa pengaturan kamera pada perangkat Anda (ponsel atau komputer). Pastikan akses kamera diizinkan untuk browser yang Anda gunakan.</li>
+                                <ul>
+                                    <li><strong>Android:</strong> Pengaturan > Aplikasi > [Nama Browser Anda] > Izin > Kamera > Izinkan.</li>
+                                    <li><strong>iOS:</strong> Pengaturan > Privasi & Keamanan > Kamera > [Nama Browser Anda] > Aktifkan.</li>
+                                    <li><strong>Windows/macOS:</strong> Periksa pengaturan privasi sistem untuk kamera dan pastikan browser Anda memiliki izin.</li>
+                                </ul>
+                            </ol>
+                            <p class="text-muted">Akses kamera diperlukan untuk mengambil foto saat melakukan absensi.</p>
+                        </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Hidden video element for camera stream -->
+            <video id="videoElement" style="display: none;"></video>
+
         </div>
+        
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            //tampilkan container panduan-lokasi-kamera
+            const panduanLokasiKamera = document.querySelector('.panduan-lokasi-kamera');
+            panduanLokasiKamera.style.display = 'none'; // Sembunyikan secara default
+
+            document.querySelector('[data-bs-toggle="collapse"]').addEventListener('click', function() {
+                if (panduanLokasiKamera.style.display === 'none') {
+                    panduanLokasiKamera.style.display = 'block';
+                } else {
+                    panduanLokasiKamera.style.display = 'none';
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
             const locationSwitch = document.getElementById('locationSwitch');
             const cameraSwitch = document.getElementById('cameraSwitch');
+            
+            // Variable to hold the camera stream
+            let cameraStream = null;
 
             locationSwitch.addEventListener('change', function() {
                 if (this.checked) {
@@ -210,7 +289,11 @@
                     }
                     
                 } else {
+                    //matikan lokasi atau blokir lokasi
                     console.log('Lokasi (Koordinat GPS) telah dinonaktifkan.');
+                    
+                    console.log('Fitur Lokasi (Koordinat GPS) telah dinonaktifkan di aplikasi.');
+                    alert('Untuk sepenuhnya memblokir akses, Anda harus mengubah pengaturan izin lokasi untuk situs ini di browser Anda.');
                 }
             });
 
@@ -233,9 +316,34 @@
                             });
                     }
                     startCamera();
+                    const video = document.getElementById('videoElement');
+                    const constraints = {
+                        video: true,
+                        audio: false
+                    };
+
+                    // Request camera access
+                    navigator.mediaDevices.getUserMedia(constraints)
+                        .then(function(stream) {
+                            cameraStream = stream; // Simpan stream
+                            video.srcObject = stream;
+                            video.play();
+                            console.log('Akses kamera berhasil.');
+                        })
+                        .catch(function(error) {
+                            console.error('Error mengakses kamera:', error);
+                            alert('Gagal mengakses kamera. Pastikan Anda telah memberikan izin di browser.');
+                            cameraSwitch.checked = false; // Kembalikan saklar ke posisi mati jika izin gagal
+                        });
                 } else {
                     console.log('Kamera telah dinonaktifkan.');
                     // Di sini Anda bisa menambahkan logika/fungsi saat kamera dinonaktifkan
+                    if (cameraStream) {
+                        // Hentikan setiap track (video) dalam stream
+                        cameraStream.getTracks().forEach(track => track.stop());
+                        cameraStream = null; // Hapus referensi stream
+                        console.log('Stream kamera telah dihentikan.');
+                    }
                 }
             });
         });
