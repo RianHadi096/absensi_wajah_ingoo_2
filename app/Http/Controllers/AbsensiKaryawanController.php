@@ -23,26 +23,30 @@ class AbsensiKaryawanController extends Controller{
         $today_absensi = AbsensiKaryawan::where('id_karyawan', $userId)->where('tanggal_absensi', $date_only)->first();
         $sudah_absen_masuk = $today_absensi && $today_absensi->jam_masuk ? true : false;
         $sudah_absen_keluar = $today_absensi && $today_absensi->jam_keluar ? true : false;
+        
+        // Ambil jam kerja dinamis dari profil karyawan
+        $karyawan = Karyawan::find($userId);
+        // Gunakan jam kerja dari DB, atau default jika tidak ada
+        $jam_masuk_kerja = $karyawan && $karyawan->jam_kerja ? Carbon::parse($karyawan->jam_kerja)->format('H:i') : '08:00';
+        $jam_keluar_kerja = $karyawan && $karyawan->batas_jam_kerja ? Carbon::parse($karyawan->batas_jam_kerja)->format('H:i') : '17:00';
 
-        // atur jam kerja 08:00 - 17:00 (tanggal disesuaikan ke hari ini)
-        // gunakan Carbon::today()->setTime agar tanggalnya konsisten (hari ini) dan waktu tetap
-        $jam_masuk_kerja = Carbon::today()->setTime(8, 0, 0)->format('H:i');
-        $jam_keluar_kerja = Carbon::today()->setTime(17, 0, 0)->format('H:i');
         $sekarang = Carbon::now()->format('H:i');
         $tanggal = Carbon::now()->format('d-m-Y');
 
         //reset absensi jam 00:00 dan lakukan absensi baru sampai batas jam kerja 17:00
         $absensi_baru = false;
-        if ($sekarang >= '00:00' && $sekarang <= '17:00') {
+        // Logika disesuaikan dengan jam pulang kerja dinamis
+        if ($sekarang >= '00:00' && $sekarang <= $jam_keluar_kerja) {
             $absensi_baru = true;
         }
 
         //jika sudah lewat jam kerja 17:00 tetapi absen masuk, maka bisa absen keluar saja
         $lembur = false;
-        if ($sekarang > '17:00' && $sudah_absen_masuk && !$sudah_absen_keluar) {
+        // Logika disesuaikan dengan jam pulang kerja dinamis
+        if ($sekarang > $jam_keluar_kerja && $sudah_absen_masuk && !$sudah_absen_keluar) {
             $lembur = true;
         }
-        if ($sekarang > '17:00' && $sudah_absen_masuk && $sudah_absen_keluar) {
+        if ($sekarang > $jam_keluar_kerja && $sudah_absen_masuk && $sudah_absen_keluar) {
             $lembur = true;
         }
 
@@ -161,7 +165,7 @@ class AbsensiKaryawanController extends Controller{
                         ],
                         [
                             'status_absensi' => 'Sakit',
-                            'koordinat' => $request->input('koordinat', ''),
+                            'koordinat' => $request->input('koordinat'),
                             'foto_sakit' => $firstFile['path'],
                             'keterangan' => $keterangan,
                         ]
@@ -302,7 +306,7 @@ class AbsensiKaryawanController extends Controller{
                         ],
                         [
                             'status_absensi' => 'Izin',
-                            'koordinat' => $request->input('koordinat', ''),
+                            'koordinat' => $request->input('koordinat'),
                             'foto_izin' => $firstFile['path'],
                             'keterangan' => $keterangan,
                         ]
@@ -536,14 +540,15 @@ class AbsensiKaryawanController extends Controller{
         $karyawan = new Karyawan();
         $user = new User();
 
-    // inisiasi jam masuk/keluar kerja tetap: 08:00 dan 17:00 (tanggal hari ini)
-    $jam_masuk_kerja = Carbon::today()->setTime(8, 0, 0);
-    $jam_keluar_kerja = Carbon::today()->setTime(17, 0, 0);
-
         //mengambil format tanggal
         $date_only = Carbon::now()->toDateString();
         //mengambil format jam
         $hour_only = Carbon::now()->toDateTimeString();
+
+        // Ambil jam kerja dinamis dari profil karyawan
+        $karyawan = Karyawan::find(session('user_id'));
+        $jam_masuk_kerja = $karyawan && $karyawan->jam_kerja ? Carbon::today()->setTimeFromTimeString($karyawan->jam_kerja) : Carbon::today()->setTime(8, 0, 0);
+        $jam_keluar_kerja = $karyawan && $karyawan->batas_jam_kerja ? Carbon::today()->setTimeFromTimeString($karyawan->batas_jam_kerja) : Carbon::today()->setTime(17, 0, 0);
 
         //ambil data karyawan (profile) berdasarkan session user id
         $profile = Karyawan::find(session('user_id'));
@@ -552,7 +557,7 @@ class AbsensiKaryawanController extends Controller{
 
         // Face verification
         $userId = session('user_id');
-        $karyawan = Karyawan::find($userId);
+        // $karyawan sudah diambil di atas
         if (!$karyawan || !$karyawan->imageFileLocation) {
             return redirect()->route('karyawan/histori_absensi')->with('message', 'Face reference not found.');
         }
@@ -583,7 +588,7 @@ class AbsensiKaryawanController extends Controller{
         }
 
         //menentukan status absensi
-        $koordinat = $request->input('koordinat', '');
+        $koordinat = $request->input('koordinat');
         if (Carbon::now()->lessThanOrEqualTo($jam_masuk_kerja)) {
             $status_absensi = 'Hadir Tepat Waktu';
             $absensi::Create([
@@ -645,7 +650,7 @@ class AbsensiKaryawanController extends Controller{
         }
 
         // Update with clock out time
-        $koordinat = $request->input('koordinat', '');
+        $koordinat = $request->input('koordinat');
         $absensi->update([
             'jam_keluar' => $hour_only,
             'foto_keluar' => $foto_keluar_path,

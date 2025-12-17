@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AbsensiKaryawanController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\PengaturanController;
 
 Route::get('/', [LoginController::class, 'showLoginForm']);
 
@@ -79,3 +80,10 @@ Route::post('karyawan/absensi/rekam_izin', [AbsensiKaryawanController::class, 'r
 Route::post('karyawan/absensi/rekam_sakit', [AbsensiKaryawanController::class, 'rekamSakit'])->middleware('auth')->name('karyawan/absensi/rekam_sakit');
 Route::post('upload-sakit', [AbsensiKaryawanController::class, 'uploadFotoSakit'])->middleware('auth')->name('upload-sakit');
 Route::post('upload-izin', [AbsensiKaryawanController::class, 'uploadFotoIzin'])->middleware('auth')->name('upload-izin');
+
+//akses pengaturan (mode karyawan)
+Route::get('karyawan/pengaturan',[PengaturanController::class,'settingKaryawan'])->middleware('auth')->name('karyawan/pengaturan');
+//akses pengaturan (mode admin)
+Route::get('admin/pengaturan',[PengaturanController::class,'settingAdmin'])->name('admin.pengaturan');
+//update jam kerja
+Route::post('admin/pengaturan/jamkerja/update',[PengaturanController::class,'updateJamKerja'])->name('admin.pengaturan.jamkerja.update');

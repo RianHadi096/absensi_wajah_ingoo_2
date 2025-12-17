@@ -67,7 +67,7 @@ class LoginController extends Controller
                 $request->session()->put('role', 'admin');
                 return redirect()->route('admin/dashboard');
             } else {
-                return redirect()->back()->withError('message', 'Gagal login sebagai admin! Cek kembali username, password atau role-nya.')->withInput();
+                return redirect()->back()->withError('Gagal login sebagai admin! Cek kembali username, password atau role-nya.')->withInput();
             }
         }
 

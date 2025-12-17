@@ -11,6 +11,7 @@ class Karyawan extends Model
     protected $table = 'profile_karyawan';
     protected $primaryKey = 'id';
     protected $fillable = [
+        
         'nama_lengkap',
         'tanggal_lahir',
         'NIK',
@@ -19,6 +20,8 @@ class Karyawan extends Model
         'tanggal_masuk_kerja',
         'nomor_handphone',
         'imageFileLocation',
+        'jam_kerja', // Tambahkan ini
+        'batas_jam_kerja' // Tambahkan ini
     ];
 
     protected $casts = [

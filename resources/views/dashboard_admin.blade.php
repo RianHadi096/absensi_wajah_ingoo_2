@@ -184,7 +184,7 @@
                 <div class="d-grid gap-2 col-6 mx-auto">
                     <a class="btn btn-outline-dark m-2" href="{{ route('admin.karyawan') }}" role="button"><i class="fa fa-user" aria-hidden="true"></i> Kelola Karyawan</a>
                     <a class="btn btn-outline-dark m-2" href="{{ route('histori_absensi_karyawan') }}" role="button"><i class="fa fa-user" aria-hidden="true"></i><i class="fa fa-book" aria-hidden="true"></i> Kelola Histori Absensi Karyawan</a>
-                    <a class="btn btn-outline-dark m-2" href="#" role="button"><i class="fa fa-cog" aria-hidden="true"></i> Pengaturan</a>
+                    <a class="btn btn-outline-dark m-2" href="{{ route('admin.pengaturan') }}" role="button"><i class="fa fa-cog" aria-hidden="true"></i> Pengaturan</a>
                 </div>
             </div>
         </div>
@@ -195,8 +195,8 @@
                 <!-- Desktop: full copyright with -->
                 <span class="text-center desktop-footer">&copy; 2025 Rian Hadi & PT.Internet Network Global Online. All rights reserved</span>
                 <!-- Mobile: compact single-line copyright + version with smaller font size (shown at <=500px) -->
-                <span class="text-center mobile-footer">&copy; 2025 Rian Hadi & INGOO | v 1.0.0 Beta 1</span>
-                <span class="text-center version-footer">Version 1.0.0 Beta 1</span>
+                <span class="text-center mobile-footer">&copy; 2025 Rian Hadi & INGOO | v 1.0.0 Release 1</span>
+                <span class="text-center version-footer">Version 1.0.0 Release 1</span>
             </div>
         </div>
     </footer>

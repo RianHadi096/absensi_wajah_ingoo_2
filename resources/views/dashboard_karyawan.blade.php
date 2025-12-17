@@ -170,8 +170,8 @@
     </nav>
     <main>
         <div class="container text-center">
-            <h1 class="mt-5">Welcome, {{ Auth::user()->name }}</h1>
-            <p>You have successfully logged in.</p>
+            <h1 class="mt-5">Selamat Datang, {{ Auth::user()->name }}</h1>
+            <p>"Anda berhasil login."</p>
         </div>
         <div class="container">
             <div class="text-center"><h2 class="mt-5">Main Menu</h2></div>
@@ -188,7 +188,7 @@
                         <i class="fa fa-table" aria-hidden="true"></i>
                         <span class="text-center">Histori Absensi</span>
                     </a>
-                    <a class="btn btn-outline-dark menu-btn" href="#" role="button">
+                    <a class="btn btn-outline-dark menu-btn" href="{{ route('karyawan/pengaturan') }}" role="button">
                         <i class="fa fa-cog" aria-hidden="true"></i>
                         <span class="text-center">Pengaturan</span>
                     </a>
@@ -203,8 +203,8 @@
                 <!-- Desktop: full copyright with -->
                 <span class="text-center desktop-footer">&copy; 2025 Rian Hadi & PT.Internet Network Global Online. All rights reserved</span>
                 <!-- Mobile: compact single-line copyright + version with smaller font size (shown at <=500px) -->
-                <span class="text-center mobile-footer">&copy; 2025 Rian Hadi & INGOO | v 1.0.0 Beta 1</span>
-                <span class="text-center version-footer">Version 1.0.0 Beta 1</span>
+                <span class="text-center mobile-footer">&copy; 2025 Rian Hadi & INGOO | v 1.0.0 Release 1</span>
+                <span class="text-center version-footer">Version 1.0.0 Release 1</span>
             </div>
         </div>
     </footer>

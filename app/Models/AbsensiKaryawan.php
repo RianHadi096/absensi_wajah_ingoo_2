@@ -20,7 +20,7 @@ class AbsensiKaryawan extends Model
         'jam_keluar',
         'koordinat',
         'foto_masuk',
-        'foto_keluar',
+        'foto_keluar'
     ];
 
     public function karyawan()
