@@ -317,6 +317,24 @@
                                 <label for="tanggal_masuk_kerja" class="form-label">Tanggal Masuk Kerja</label>
                                 <input type="date" class="form-control" id="tanggal_masuk_kerja" name="tanggal_masuk_kerja" required>
                             </div>
+                            <!--Jam Kerja dan batas jam kerja -->
+                            <div class="row g-2">
+                              <div class="col-md-6">
+                                <div class="mb-3">
+                                  <label for="jam_kerja" class="form-label">Jam Kerja</label>
+                                  <input type="time" class="form-control" id="jam_kerja" name="jam_kerja" value="{{ old('jam_kerja') }}" required>
+                                  @error('jam_kerja')<div class="text-danger small">{{ $message }}</div>@enderror
+                                </div>
+                              </div>
+                              <div class="col-md-6">
+                                <div class="mb-3">
+                                  <label for="batas_jam_kerja" class="form-label">Batas Jam Kerja</label>
+                                  <input type="time" class="form-control" id="batas_jam_kerja" name="batas_jam_kerja" value="{{ old('batas_jam_kerja') }}" required>
+                                  @error('batas_jam_kerja')<div class="text-danger small">{{ $message }}</div>@enderror
+                                </div>
+                              </div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="nomor_handphone" class="form-label">Nomor Handphone</label>
                                 <input type="text" class="form-control" id="nomor_handphone" name="nomor_handphone" required>
@@ -379,6 +397,23 @@
                         <div class="mb-3">
                             <label for="edit_tanggal_masuk_kerja" class="form-label">Tanggal Masuk Kerja</label>
                             <input type="date" class="form-control" id="edit_tanggal_masuk_kerja" name="tanggal_masuk_kerja" required>
+                        </div>
+                        <!--Jam Kerja dan batas jam kerja -->
+                        <div class="row g-2">
+                          <div class="col-md-6">
+                            <div class="mb-3">
+                              <label for="edit_jam_kerja" class="form-label">Jam Kerja</label>
+                              <input type="time" class="form-control" id="edit_jam_kerja" name="jam_kerja" required>
+                              @error('jam_kerja')<div class="text-danger small">{{ $message }}</div>@enderror
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div class="mb-3">
+                              <label for="edit_batas_jam_kerja" class="form-label">Batas Jam Kerja</label>
+                              <input type="time" class="form-control" id="edit_batas_jam_kerja" name="batas_jam_kerja" required>
+                              @error('batas_jam_kerja')<div class="text-danger small">{{ $message }}</div>@enderror
+                            </div>
+                          </div>
                         </div>
                         <div class="mb-3">
                             <label for="edit_nomor_handphone" class="form-label">Nomor Handphone</label>
@@ -468,6 +503,8 @@
                     document.getElementById('edit_bagian').value = selectedKaryawan.bagian;
                     document.getElementById('edit_jabatan').value = selectedKaryawan.jabatan;
                     document.getElementById('edit_tanggal_masuk_kerja').value = selectedKaryawan.tanggal_masuk_kerja ? new Date(selectedKaryawan.tanggal_masuk_kerja).toISOString().split('T')[0] : '';
+                    document.getElementById('edit_jam_kerja').value = selectedKaryawan.jam_kerja || '';
+                    document.getElementById('edit_batas_jam_kerja').value = selectedKaryawan.batas_jam_kerja || '';
                     document.getElementById('edit_nomor_handphone').value = selectedKaryawan.nomor_handphone;
                     // For image, if exists, show preview
                     if (selectedKaryawan.imageFileLocation) {
@@ -486,6 +523,8 @@
                 document.getElementById('edit_bagian').value = '';
                 document.getElementById('edit_jabatan').value = '';
                 document.getElementById('edit_tanggal_masuk_kerja').value = '';
+                document.getElementById('edit_jam_kerja').value = '';
+                document.getElementById('edit_batas_jam_kerja').value = '';
                 document.getElementById('edit_nomor_handphone').value = '';
                 document.getElementById('edit-preview-image').style.display = 'none';
             }

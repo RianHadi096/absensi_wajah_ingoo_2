@@ -106,12 +106,8 @@
                                                     </select>
                                                 </div>
                                                 <button class="btn btn-outline-dark d-block btn-user w-100" type="submit">Login <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
-                                                <hr />
                                             </form>
-                                            <div class="text-center"><a class="small" href="forgot-password.html" >Forgot Password?</a></div>
                                         </div>
-                                
-                            
                         </div>
                     </div>
                 </div>

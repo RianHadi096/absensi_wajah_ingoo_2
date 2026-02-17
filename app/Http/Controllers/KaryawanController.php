@@ -59,6 +59,8 @@ class KaryawanController extends Controller
             'tanggal_masuk_kerja' => 'required|date',
             'nomor_handphone' => 'required|string|max:20',
             'imageFileLocation' => 'nullable|image|mimes:jpg,png|max:3072',
+            'jam_kerja' => 'nullable|string|max:20',
+            'batas_jam_kerja' => 'nullable|string|max:20',
         ]);
 
         //panggil model Karyawan dan Model User
@@ -79,6 +81,8 @@ class KaryawanController extends Controller
             'tanggal_masuk_kerja' => $request->tanggal_masuk_kerja,
             'nomor_handphone' => $request->nomor_handphone,
             'imageFileLocation' => $request->hasFile('imageFileLocation') ? $path : null,
+            'jam_kerja' => $request->jam_kerja,
+            'batas_jam_kerja' => $request->batas_jam_kerja,
         ]);
 
         //membuat username dan password otomatis dari nama_lengkap
@@ -130,6 +134,8 @@ class KaryawanController extends Controller
             'tanggal_masuk_kerja' => 'required|date',
             'nomor_handphone' => 'required|string|max:20',
             'imageFileLocation' => 'nullable|image|mimes:jpg,png|max:3072',
+            'jam_kerja' => 'nullable|string|max:20',
+            'batas_jam_kerja' => 'nullable|string|max:20',
         ]);
         //update foto dengan string lokasi file jika ada file yang diupload
         if ($request->hasFile('imageFileLocation')) {
@@ -150,6 +156,8 @@ class KaryawanController extends Controller
             'tanggal_masuk_kerja' => $request->tanggal_masuk_kerja,
             'nomor_handphone' => $request->nomor_handphone,
             'imageFileLocation' => $karyawan->imageFileLocation,
+            'jam_kerja' => $request->jam_kerja,
+            'batas_jam_kerja' => $request->batas_jam_kerja,
         ]);
         return redirect()->route('admin.karyawan')->with('message', 'Data Karyawan Berhasil Diupdate.');
     }
